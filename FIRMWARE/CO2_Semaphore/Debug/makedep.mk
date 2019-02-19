@@ -8,6 +8,8 @@ drivers\uart.c
 
 fsms\button.c
 
+fsms\buzzer.c
+
 fsms\dht.c
 
 fsms\encoder.c

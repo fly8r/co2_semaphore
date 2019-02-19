@@ -138,6 +138,9 @@
     <Compile Include="fsms\button.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="fsms\buzzer.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="fsms\dht.c">
       <SubType>compile</SubType>
     </Compile>
@@ -145,6 +148,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="fsms\include\button.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="fsms\include\buzzer.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="fsms\include\dht.h">

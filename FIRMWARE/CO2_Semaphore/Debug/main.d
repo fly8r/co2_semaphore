@@ -49,7 +49,7 @@ main.d main.o: .././main.c .././main.h \
  c:\programs\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\eeprom.h \
  .././fsms/include/dht.h .././fsms/include/mhz19b.h \
  .././fsms/include/button.h .././fsms/include/encoder.h \
- .././fsms/include/leds.h
+ .././fsms/include/leds.h .././fsms/include/buzzer.h
 
 .././main.h:
 
@@ -180,3 +180,5 @@ c:\programs\atmel\studio\7.0\toolchain\avr8\avr8-gnu-toolchain\avr\include\avr\e
 .././fsms/include/encoder.h:
 
 .././fsms/include/leds.h:
+
+.././fsms/include/buzzer.h:

@@ -59,6 +59,7 @@ int main(void)
 	FSM_BUTTON_Init();
 	FSM_ENC_Init();
 	FSM_LEDS_Init();
+	FSM_BUZZER_Init();
 
 	// Enable global interrupts
 	sei();
@@ -78,6 +79,7 @@ int main(void)
 		FSM_BUTTON_Process();
 		FSM_ENC_Process();
 		FSM_LEDS_Process();
+		FSM_BUZZER_Process();
 
 		// Processing messages queue
 		ProcessMessages();

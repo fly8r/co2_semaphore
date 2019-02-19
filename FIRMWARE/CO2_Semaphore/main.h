@@ -25,6 +25,7 @@
 #include "fsms/include/button.h"
 #include "fsms/include/encoder.h"
 #include "fsms/include/leds.h"
+#include "fsms/include/buzzer.h"
 
 /************************************************************************/
 /* VARS                                                                 */

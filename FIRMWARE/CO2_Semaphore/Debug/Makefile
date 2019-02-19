@@ -46,6 +46,7 @@ C_SRCS +=  \
 ../drivers/i2c.c \
 ../drivers/uart.c \
 ../fsms/button.c \
+../fsms/buzzer.c \
 ../fsms/dht.c \
 ../fsms/encoder.c \
 ../fsms/lcd.c \
@@ -76,6 +77,7 @@ OBJS +=  \
 drivers/i2c.o \
 drivers/uart.o \
 fsms/button.o \
+fsms/buzzer.o \
 fsms/dht.o \
 fsms/encoder.o \
 fsms/lcd.o \
@@ -99,6 +101,7 @@ OBJS_AS_ARGS +=  \
 drivers/i2c.o \
 drivers/uart.o \
 fsms/button.o \
+fsms/buzzer.o \
 fsms/dht.o \
 fsms/encoder.o \
 fsms/lcd.o \
@@ -122,6 +125,7 @@ C_DEPS +=  \
 drivers/i2c.d \
 drivers/uart.d \
 fsms/button.d \
+fsms/buzzer.d \
 fsms/dht.d \
 fsms/encoder.d \
 fsms/lcd.d \
@@ -145,6 +149,7 @@ C_DEPS_AS_ARGS +=  \
 drivers/i2c.d \
 drivers/uart.d \
 fsms/button.d \
+fsms/buzzer.d \
 fsms/dht.d \
 fsms/encoder.d \
 fsms/lcd.d \
@@ -193,6 +198,13 @@ drivers/uart.o: ../drivers/uart.c
 	
 
 fsms/button.o: ../fsms/button.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)C:\Programs\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Programs\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include"  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega328p -B "C:\Programs\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega328p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+fsms/buzzer.o: ../fsms/buzzer.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)C:\Programs\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Programs\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\include"  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega328p -B "C:\Programs\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.2.209\gcc\dev\atmega328p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
