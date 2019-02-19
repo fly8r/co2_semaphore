@@ -1,0 +1,8 @@
+; Drill file
+; Format: 3.3 (000.000)
+M48
+METRIC
+%
+G05
+G90
+M30
