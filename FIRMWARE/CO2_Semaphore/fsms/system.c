@@ -18,6 +18,8 @@ static					leds_params_t	led_params;
 /************************************************************************/
 void FSM_SYSTEM_Init(void)
 {
+	// Set default concentration level to unknown
+	device.concentration_level = device.last_concentration_level = DEVICE_CONCENTRATION_UNKNOWN;
 	// Set default FSM state
 	FSM_state = FSM_SYSTEM_STATE_STARTUP;
 	// Flush FSM timer
@@ -102,32 +104,64 @@ void FSM_SYSTEM_Process(void)
 			/* INDICATION CONTROL                                                   */
 			/************************************************************************/
 			if(!mhz19b._error && GetTimer(TIMER_SYSTEM) >= 1000) {
-				if(mhz19b.value <= 900) {
-					led_params._blinking = 0;
-					led_params.color = GREEN;
-					led_params.glow_time_ms = 0xFFFF;
-				} else if(mhz19b.value > 900 && mhz19b.value <= 1000) {
-					led_params._blinking = 1;
-					led_params.color = GREEN;
-					led_params.glow_time_ms = 0xFFFF;
-				} else if(mhz19b.value > 1000 && mhz19b.value <= 1700) {
-					led_params._blinking = 0;
-					led_params.color = YELLOW;
-					led_params.glow_time_ms = 0xFFFF;
-				} else if(mhz19b.value > 1700 && mhz19b.value <= 2000) {
-					led_params._blinking = 1;
-					led_params.color = YELLOW;
-					led_params.glow_time_ms = 0xFFFF;
-				} else {
-					led_params._blinking = 0;
-					led_params.color = RED;
-					led_params.glow_time_ms = 0xFFFF;
+				//
+				FSM_state = FSM_SYSTEM_STATE_CONCENTRATION_PROCESSING;
+				ResetTimer(TIMER_SYSTEM);
+				return;
+			}
+
+			/************************************************************************/
+			/* INDICATION CONTROL                                                   */
+			/************************************************************************/
+			if(device.concentration_level != device.last_concentration_level) {
+				// Store last concentration state
+				device.last_concentration_level = device.concentration_level;
+				// Activate led
+				led_params._active = 1;
+				// Set glow time to infinity
+				led_params.glow_time_ms = 0xFFFF;
+				switch(device.concentration_level) {
+					case DEVICE_CONCENTRATION_NORMAL: {
+						// Blinking - NO, Color - GREEN
+						led_params._blinking = 0;
+						led_params.color = GREEN;
+						break;
+					}
+
+					case DEVICE_CONCENTRATION_NORMAL_ABOVE: {
+						// Blinking - YES, Color - GREEN
+						led_params._blinking = 1;
+						led_params.color = GREEN;
+						break;
+					}
+
+					case DEVICE_CONCENTRATION_MIDDLE: {
+						// Blinking - NO, Color - YELLOW
+						led_params._blinking = 0;
+						led_params.color = YELLOW;
+						break;
+					}
+
+					case DEVICE_CONCENTRATION_MIDDLE_ABOVE: {
+						// Blinking - YES, Color - YELLOW
+						led_params._blinking = 1;
+						led_params.color = YELLOW;
+						break;
+					}
+
+					case DEVICE_CONCENTRATION_HIGH: {
+						// Blinking - NO, Color - RED
+						led_params._blinking = 0;
+						led_params.color = RED;
+						break;
+					}
+
+					default: break;
 				}
 				// Send message with params
 				SendMessageWParam(MSG_LEDS_PROCESSING, (void *)&led_params);
 				ResetTimer(TIMER_SYSTEM);
 			}
-
 
 			return;
 		}
@@ -153,6 +187,22 @@ void FSM_SYSTEM_Process(void)
 				// Set default device mode
 				device.mode = DEVICE_MODE_IDLE;
 			}
+			return;
+		}
+
+		case FSM_SYSTEM_STATE_CONCENTRATION_PROCESSING: {
+			if(mhz19b.value <= 900) {
+				device.concentration_level = DEVICE_CONCENTRATION_NORMAL;
+			} else if(mhz19b.value > 900 && mhz19b.value < 1000) {
+				device.concentration_level = DEVICE_CONCENTRATION_NORMAL_ABOVE;
+			} else if(mhz19b.value >= 1000 && mhz19b.value < 1700) {
+				device.concentration_level = DEVICE_CONCENTRATION_MIDDLE;
+			} else if(mhz19b.value >= 1700 && mhz19b.value < 2000) {
+				device.concentration_level = DEVICE_CONCENTRATION_MIDDLE_ABOVE;
+			} else {
+				device.concentration_level = DEVICE_CONCENTRATION_HIGH;
+			}
+			FSM_state = FSM_SYSTEM_STATE_IDLE;
 			return;
 		}
 

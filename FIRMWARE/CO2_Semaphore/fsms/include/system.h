@@ -22,6 +22,7 @@ enum FSM_SYSTEM_STATES_ENUM
 	FSM_SYSTEM_STATE_IDLE=0,
 	FSM_SYSTEM_STATE_STARTUP,
 	FSM_SYSTEM_STATE_STARTUP_COMPLETE,
+	FSM_SYSTEM_STATE_CONCENTRATION_PROCESSING,
 };
 
 /************************************************************************/

@@ -26,12 +26,23 @@ enum DEVICE_MODES_ENUM
 	DEVICE_MODE_SHOW_MENU,
 };
 
+enum DEVICE_CONCENTRATION_ENUM
+{
+	DEVICE_CONCENTRATION_UNKNOWN=0,
+	DEVICE_CONCENTRATION_NORMAL,
+	DEVICE_CONCENTRATION_NORMAL_ABOVE,
+	DEVICE_CONCENTRATION_MIDDLE,
+	DEVICE_CONCENTRATION_MIDDLE_ABOVE,
+	DEVICE_CONCENTRATION_HIGH
+};
+
 typedef struct
 {
-	uint8_t						_ext_clock;
-	uint8_t						idx_curr, menu_cursor;
-	enum DEVICE_MODES_ENUM		mode;
-	enum DEVICE_MODES_ENUM		last_mode;
+	uint8_t							_ext_clock;
+	uint8_t							idx_curr, menu_cursor;
+	enum DEVICE_MODES_ENUM			mode;
+	enum DEVICE_MODES_ENUM			last_mode;
+	enum DEVICE_CONCENTRATION_ENUM	concentration_level, last_concentration_level;
 	struct {
 		uint8_t		_menu_changed,
 					_idx_changed;
@@ -165,11 +176,20 @@ enum LED_COLORS_ENUM
 
 typedef struct
 {
-	uint8_t		_active, _blinking;
+	uint8_t		_enable, _active, _blinking;
 	enum		LED_COLORS_ENUM		color, color2;
 	uint16_t	glow_time_ms;
 } leds_params_t;
 
+
+/************************************************************************/
+/* buzzer.h                                                             */
+/************************************************************************/
+typedef struct
+{
+	uint8_t		_enable, _active, _pulse;
+	uint16_t	pulse_time_ms;
+} buzzer_data_t;
 
 
 

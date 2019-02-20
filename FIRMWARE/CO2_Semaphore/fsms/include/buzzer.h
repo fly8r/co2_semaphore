@@ -19,6 +19,7 @@
 enum FSM_BUZZER_STATES_ENUM
 {
 	FSM_BUZZER_STATE_IDLE=0,
+	FSM_BUZZER_STATE_PGM_PROCESSING,
 };
 
 /************************************************************************/

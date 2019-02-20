@@ -24,6 +24,21 @@ void FSM_BUZZER_Process(void)
 {
 	switch(FSM_state) {
 
+		case FSM_BUZZER_STATE_PGM_PROCESSING: {
+
+			return;
+		}
+
+		case FSM_BUZZER_STATE_IDLE: {
+			if(GetMessage(MSG_BUZZER_PROCESSING)) {
+
+				FSM_state = FSM_BUZZER_STATE_PGM_PROCESSING;
+
+			}
+
+			return;
+		}
+
 
 		default: break;
 	}
