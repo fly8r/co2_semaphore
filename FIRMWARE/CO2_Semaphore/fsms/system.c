@@ -11,6 +11,7 @@
 /************************************************************************/
 volatile	static		uint8_t			FSM_state;
 static					leds_params_t	led_params;
+static					buzzer_data_t	buzzer_params;
 
 
 /************************************************************************/
@@ -114,10 +115,12 @@ void FSM_SYSTEM_Process(void)
 			/* INDICATION CONTROL                                                   */
 			/************************************************************************/
 			if(device.concentration_level != device.last_concentration_level) {
-				// Store last concentration state
-				device.last_concentration_level = device.concentration_level;
+
 				// Activate led
+				led_params._enable = 1;
 				led_params._active = 1;
+				// Enable buzzer control
+				buzzer_params._enable = 1;
 				// Set glow time to infinity
 				led_params.glow_time_ms = 0xFFFF;
 				switch(device.concentration_level) {
@@ -139,6 +142,12 @@ void FSM_SYSTEM_Process(void)
 						// Blinking - NO, Color - YELLOW
 						led_params._blinking = 0;
 						led_params.color = YELLOW;
+						// Turn on buzzer only if last concentration level was above normal
+						if(device.last_concentration_level == DEVICE_CONCENTRATION_NORMAL_ABOVE) {
+							buzzer_params._active = 1;
+							buzzer_params.pulse_mode = BUZZER_PULSE_MODE_INTERVAL_EQUAL;
+							buzzer_params.pulse_count = 3;
+						}
 						break;
 					}
 
@@ -153,13 +162,20 @@ void FSM_SYSTEM_Process(void)
 						// Blinking - NO, Color - RED
 						led_params._blinking = 0;
 						led_params.color = RED;
+						//
+						buzzer_params._active = 1;
+						buzzer_params.pulse_mode = BUZZER_PULSE_MODE_INTERVAL_NOT_EQUAL;
+						buzzer_params.pulse_count = 9;
 						break;
 					}
 
 					default: break;
 				}
+				// Store last concentration state
+				device.last_concentration_level = device.concentration_level;
 				// Send message with params
 				SendMessageWParam(MSG_LEDS_PROCESSING, (void *)&led_params);
+				SendMessageWParam(MSG_BUZZER_PROCESSING, (void *)&buzzer_params);
 				ResetTimer(TIMER_SYSTEM);
 			}
 

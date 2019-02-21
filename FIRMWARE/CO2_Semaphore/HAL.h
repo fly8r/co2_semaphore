@@ -140,5 +140,13 @@
 #define LED_RED_TOGGLE()				{ LED_RED_PORT ^= LED_RED_MASK; }
 #define LED_RED_INIT()					{ LED_RED_DDR |= LED_RED_MASK; LED_RED_OFF(); }
 
+//------------------------------ Configuration IO for BUZZER
+#define BUZZER_DDR						DDRD
+#define BUZZER_PORT						PORTD
+#define BUZZER_MASK						(1<<7)
+#define BUZZER_ON()						{ BUZZER_PORT |= BUZZER_MASK; }
+#define BUZZER_OFF()					{ BUZZER_PORT &= ~BUZZER_MASK; }
+#define BUZZER_TOGGLE()					{ BUZZER_PORT ^= BUZZER_MASK; }
+#define BUZZER_INIT()					{ BUZZER_DDR |= BUZZER_MASK; BUZZER_OFF(); }
 
 #endif /* HAL_H_ */

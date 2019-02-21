@@ -25,6 +25,9 @@ enum FSM_BUZZER_STATES_ENUM
 /************************************************************************/
 /* MACROS                                                               */
 /************************************************************************/
+#define		BUZZER_PULSE_EQUAL_PERIOD			200	// ms
+#define		BUZZER_PULSE_NOT_EQUL_ON_PERIOD		300	// ms
+#define		BUZZER_PULSE_NOT_EQUL_OFF_PERIOD	700	// ms
 
 /************************************************************************/
 /* External VARS                                                        */

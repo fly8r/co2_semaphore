@@ -113,6 +113,7 @@ inline void InitGPIO(void)
 	LED_GRN_INIT();
 	// Initialize LCD back light control port
 	BL_CTRL_INIT();
-
+	// Initialize BUZZER port
+	BUZZER_INIT();
 }
 

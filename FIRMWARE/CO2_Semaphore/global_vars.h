@@ -185,10 +185,17 @@ typedef struct
 /************************************************************************/
 /* buzzer.h                                                             */
 /************************************************************************/
+enum BUZZER_PULSE_MODES_ENUM
+{
+	BUZZER_PULSE_MODE_INTERVAL_EQUAL,
+	BUZZER_PULSE_MODE_INTERVAL_NOT_EQUAL,
+};
+
 typedef struct
 {
-	uint8_t		_enable, _active, _pulse;
-	uint16_t	pulse_time_ms;
+	uint8_t								_enable, _active, _curr_state;
+	enum	BUZZER_PULSE_MODES_ENUM		pulse_mode;
+	uint16_t							pulse_count;
 } buzzer_data_t;
 
 
