@@ -14,8 +14,8 @@ static					leds_params_t	led_params;
 static					buzzer_data_t	buzzer_params;
 
 /* Max values for DATE setup */
-const uint8_t	min_date_values[]	PROGMEM = {1, 1, 1, 0};	// Dow, Day, Month, Year
-const uint8_t	max_date_values[]	PROGMEM = {7,31,12,99}; // Dow, Day, Month, Year
+const uint8_t	min_date_values[]	PROGMEM = {0, 1, 1, 0};	// Dow, Day, Month, Year
+const uint8_t	max_date_values[]	PROGMEM = {6,31,12,99}; // Dow, Day, Month, Year
 /* Max values for TIME setup */
 const uint8_t	min_time_values[]	PROGMEM = { 0, 0, 0};		// Hour, min, sec
 const uint8_t	max_time_values[]	PROGMEM = {23,59,59};	// Hour, min, sec
