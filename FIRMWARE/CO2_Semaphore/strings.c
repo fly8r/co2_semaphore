@@ -100,7 +100,7 @@ const	char
 			LNG_SW_VERSION[]							PROGMEM = "SW: 1.0";
 
 const	char
-			LNG_DM1_S1[]								PROGMEM = "Peripheral presence:\r\n",
+			LNG_DM1_S1[]								PROGMEM = "Peripheral check:\r\n",
 			LNG_DM1_S2[]								PROGMEM = " -> RTC ...\r\n",
 			LNG_DM1_S3[]								PROGMEM = " -> DHT ...\r\n",
 			LNG_DM1_S4[]								PROGMEM = " -> CO2 ...";
@@ -117,11 +117,14 @@ const	char
 			LNG_SMB_POINT[]								PROGMEM = ".",
 			LNG_SMB_MINUS[]								PROGMEM	= "-",
 			LNG_SMB_SPACE[]								PROGMEM = " ",
-			LNG_SMB_SLASH[]								PROGMEM = "/";
+			LNG_SMB_SLASH[]								PROGMEM = "/",
+			LNG_SMB_DBL_UNDERSCORE[]					PROGMEM = "__";
 
 const	char
 			LNG_FAIL[]									PROGMEM = "FAIL",
-			LNG_OK[]									PROGMEM = "OK";
+			LNG_OK[]									PROGMEM = "OK",
+			LNG_YES[]									PROGMEM = "Yes",
+			LNG_NO[]									PROGMEM = "No";
 
 
 const	char
@@ -140,6 +143,10 @@ const	char
 			LNG_MENU_ITEM_MONITORING_H[]				PROGMEM = "Humidity Graph",
 			LNG_MENU_ITEM_MAIN_SCREEN[]					PROGMEM = "Main screen",
 			LNG_MENU_ITEM_UP[]							PROGMEM = "*Up";
+
+const	char
+			LNG_IF_SETUP_DATE[]							PROGMEM = "Setup date:\r\n\r\n\r\nSave?",
+			LNG_IF_SETUP_TIME[]							PROGMEM = "Setup time:\r\n\r\n\r\nSave?";
 
 const	char
 			LNG_MONDAY[]								PROGMEM = "Mon",

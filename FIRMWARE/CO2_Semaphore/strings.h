@@ -47,11 +47,14 @@ extern	const	char
 		LNG_SMB_POINT[],
 		LNG_SMB_MINUS[],
 		LNG_SMB_SPACE[],
-		LNG_SMB_SLASH[];
+		LNG_SMB_SLASH[],
+		LNG_SMB_DBL_UNDERSCORE[];
 
 extern	const	char
 		LNG_FAIL[],
-		LNG_OK[];
+		LNG_OK[],
+		LNG_YES[],
+		LNG_NO[];
 
 extern	const	char
 		LNG_MENU_ITEM_SETTINGS[],
@@ -70,7 +73,9 @@ extern	const	char
 		LNG_MENU_ITEM_MAIN_SCREEN[],
 		LNG_MENU_ITEM_UP[];
 
-
+extern	const	char
+		LNG_IF_SETUP_DATE[],
+		LNG_IF_SETUP_TIME[];
 
 extern	const	char
 		LNG_MONDAY[],

@@ -229,7 +229,7 @@ void FSM_PCF8574_GoToXY(uint8_t row, uint8_t col)
 	// Calculate address with Col shift
 	addr += col;
 	// Set address to display DRAM
-	FSM_PCF8574_AddByteToQueue(PCF8574_CMD_DDRAM_ADDR | addr, PCF8574_COMMAND, PCF8574_BYTE_FULL, 1);
+	FSM_PCF8574_AddByteToQueue(PCF8574_CMD_DDRAM_ADDR | addr, PCF8574_COMMAND, PCF8574_BYTE_FULL, 2);
 	// Store row value
 	pcf8574.last_row = row;
 }

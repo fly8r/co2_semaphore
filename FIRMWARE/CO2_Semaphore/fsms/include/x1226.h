@@ -34,11 +34,11 @@ enum FSM_X1226_STATES_ENUM
 	FSM_X1226_STATE_READ_CCR_DATA,
 	FSM_X1226_STATE_CCR_DATA_PROCESSING,
 
-	FSM_X1226_STATE_READ_CONTROL_DATA,
-	FSM_X1226_STATE_CONTROL_DATA_PROCESSING,
+// 	FSM_X1226_STATE_READ_CONTROL_DATA,
+// 	FSM_X1226_STATE_CONTROL_DATA_PROCESSING,
 
 
-	FSM_X1226_STATE_SET_DATA,
+	FSM_X1226_STATE_SET_DATE,
 	FSM_X1226_STATE_SET_TIME,
 };
 
@@ -46,7 +46,9 @@ enum X1226_INIT_TYPES_ENUM
 {
 	X1226_INIT_TYPE_NO_NEED=0,		// No need initialization
 	X1226_INIT_TYPE_PARTIAL,		// Need partial initialization (enable write, enable Pulse Interrupt Mode)
-	X1226_INIT_TYPE_FULL			// Need full initialization (enable write, setup default clock data, enable Pulse Interrupt Mode)
+	X1226_INIT_TYPE_FULL,			// Need full initialization (enable write, setup default clock data, enable Pulse Interrupt Mode)
+	X1226_INIT_TYPE_SET_DATE,
+	X1226_INIT_TYPE_SET_TIME,
 };
 
 /************************************************************************/

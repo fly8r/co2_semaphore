@@ -13,7 +13,7 @@
 #define USE_BC_MESSAGES
 
 // Messages queue deep
-#define	MAX_MESSAGES				11
+#define	MAX_MESSAGES				16
 // Message definitions
 enum MSG_ENUM
 {
@@ -29,6 +29,10 @@ enum MSG_ENUM
 	MSG_LEDS_TURN_OFF,
 	MSG_BUZZER_PROCESSING,
 	MSG_BUZZER_TURN_OFF,
+	MSG_RTC_RESUME_READ,
+	MSG_RTC_STOP_READ,
+	MSG_RTC_SET_DATE,
+	MSG_RTC_SET_TIME,
 };
 
 #ifdef USE_BC_MESSAGES

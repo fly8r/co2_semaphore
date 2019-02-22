@@ -27,7 +27,7 @@ enum BUTTON_STATES_ENUM
 /* MACROS                                                               */
 /************************************************************************/
 #define			BUTTON_DEBOUNCE_DELAY		10
-#define			BUTTON_LONG_PRESS_COUNT		60
+#define			BUTTON_LONG_PRESS_COUNT		45
 
 typedef struct {
 	enum	BUTTON_EVENTS_ENUM		event,

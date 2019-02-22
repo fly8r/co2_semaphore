@@ -13,6 +13,13 @@ volatile	static		uint8_t			FSM_state;
 static					leds_params_t	led_params;
 static					buzzer_data_t	buzzer_params;
 
+/* Max values for DATE setup */
+const uint8_t	min_date_values[]	PROGMEM = {1, 1, 1, 0};	// Dow, Day, Month, Year
+const uint8_t	max_date_values[]	PROGMEM = {7,31,12,99}; // Dow, Day, Month, Year
+/* Max values for TIME setup */
+const uint8_t	min_time_values[]	PROGMEM = { 0, 0, 0};		// Hour, min, sec
+const uint8_t	max_time_values[]	PROGMEM = {23,59,59};	// Hour, min, sec
+
 
 /************************************************************************/
 /* FUNCTIONS                                                            */
@@ -58,6 +65,29 @@ void FSM_SYSTEM_Process(void)
 									break;
 								}
 
+								case MENU_ACTION_DATETIME_SET_DATE: {
+									// Send message to RTC module that stop
+									// read data from chip
+									SendMessageWOParam(MSG_RTC_STOP_READ);
+									// Change device mode
+									device.mode = DEVICE_MODE_DATETIME_SET_DATE;
+									// Set data IDX change flag for refresh screen
+									device.flags._idx_changed=1;
+									break;
+								}
+
+								case MENU_ACTION_DATETIME_SET_TIME: {
+									// Send message to RTC module that stop
+									// read data from chip
+									SendMessageWOParam(MSG_RTC_STOP_READ);
+									// Change device mode
+									device.mode = DEVICE_MODE_DATETIME_SET_TIME;
+									// Set data IDX change flag for refresh screen
+									device.flags._idx_changed=1;
+									break;
+								}
+
+
 								default: break;
 							}
 
@@ -67,6 +97,55 @@ void FSM_SYSTEM_Process(void)
 							return;
 						}
 
+						case DEVICE_MODE_DATETIME_SET_DATE: {
+							// Set data IDX change flag for refresh screen
+							device.flags._idx_changed=1;
+							// Increment current data index
+							if(device.idx_curr++ > 3) {
+								// Action by answer for question SAVE Y(4) N(5)
+								if(device.idx_curr == 5) { // <- Y - yes
+									// Send message for save date data
+									SendMessageWOParam(MSG_RTC_SET_DATE);
+								} else { // <- N - no
+									// Send message for continue read data from RTC
+									SendMessageWOParam(MSG_RTC_RESUME_READ);
+								}
+								// Flush current data index
+								device.idx_curr=0;
+								// Set current device mode
+								device.mode = DEVICE_MODE_SHOW_MENU;
+								// Redraw display flag when menu changed
+								device.flags._menu_changed=1;
+							}
+							// Send command for refresh display
+							SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+							return;
+						}
+
+						case DEVICE_MODE_DATETIME_SET_TIME: {
+							// Set data IDX change flag for refresh screen
+							device.flags._idx_changed=1;
+							// Increment current data index
+							if(device.idx_curr++ > 2) {
+								// Action by answer for question SAVE Y(4) N(5)
+								if(device.idx_curr == 4) { // <- Y - yes
+									// Send message for save date data
+									SendMessageWOParam(MSG_RTC_SET_TIME);
+								} else { // <- N - no
+									// Send message for continue read data from RTC
+									SendMessageWOParam(MSG_RTC_RESUME_READ);
+								}
+								// Flush current data index
+								device.idx_curr=0;
+								// Set current device mode
+								device.mode = DEVICE_MODE_SHOW_MENU;
+								// Redraw display flag when menu changed
+								device.flags._menu_changed=1;
+							}
+							// Send command for refresh display
+							SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+							return;
+						}
 
 
 
@@ -89,6 +168,77 @@ void FSM_SYSTEM_Process(void)
 							MENU_Change(MENU_NEXT);
 						} else {
 							MENU_Change(MENU_PREVIOUS);
+						}
+						// Send message to refresh display
+						SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+						break;
+					}
+					// Setup date mode rotate processing
+					case DEVICE_MODE_DATETIME_SET_DATE: {
+						uint8_t * d;
+						uint8_t min, max;
+						// Get pointer to data DOW
+						d = (void *)&rtc.dow;
+						//  0   1  2  3  4 5    <- idx_curr
+						// Fri 01/01/00
+						//           	 Y N
+						if(device.idx_curr > 3) {
+							// Answer position change ->    Y   N
+							if(device.idx_curr == 4) {
+								device.idx_curr++;
+							} else if(device.idx_curr == 5) {
+								device.idx_curr--;
+							}
+							// Set idx change flag for display full refresh
+							device.flags._idx_changed=1;
+						} else {
+							// Get data pointer for change
+							d += device.idx_curr;
+							// Get min/max value for current data pointer
+							min = pgm_read_byte(min_date_values + device.idx_curr);
+							max = pgm_read_byte(max_date_values + device.idx_curr);
+							// Rotation processing
+							if(*rotate > 0) {
+								if(++(*d) > max) *d = min;
+							} else {
+								if(--(*d) < min || *d >= max) *d = max;
+							}
+						}
+						// Send message to refresh display
+						SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+						break;
+					}
+
+					// Setup time mode rotate processing
+					case DEVICE_MODE_DATETIME_SET_TIME: {
+						uint8_t * d;
+						uint8_t min, max;
+						// Get pointer to data DOW
+						d = (void *)&rtc.hour;
+						//  0  1  2     3 4    <- idx_curr
+						//              SAVE
+						// 01:01:18	     Y N
+						if(device.idx_curr > 2) {
+							// Answer position change ->    Y   N
+							if(device.idx_curr == 3) {
+								device.idx_curr++;
+								} else if(device.idx_curr == 4) {
+								device.idx_curr--;
+							}
+							// Set idx change flag for display full refresh
+							device.flags._idx_changed=1;
+						} else {
+							// Get data pointer for change
+							d -= device.idx_curr;
+							// Get min/max value for current data pointer
+							min = pgm_read_byte(min_time_values + device.idx_curr);
+							max = pgm_read_byte(max_time_values + device.idx_curr);
+							// Rotation processing
+							if(*rotate > 0) {
+								if(++(*d) > max) *d = min;
+							} else {
+								if(--(*d) < min || *d >= max) *d = max;
+							}
 						}
 						// Send message to refresh display
 						SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);

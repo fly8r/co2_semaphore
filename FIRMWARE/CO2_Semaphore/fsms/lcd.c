@@ -281,6 +281,136 @@ void FSM_LCD_Process(void)
 					break;
 				}
 
+				case DEVICE_MODE_DATETIME_SET_DATE: {
+					if(device.flags._idx_changed) { // <- Index was changed - full refresh
+						// Flush idx changed flag
+						device.flags._idx_changed=0;
+						// Prepare display static data
+						//     Setup date:
+						//
+						//	   Fri 01/01/00
+						//     Save?         Yes No
+						FSM_PCF8574_Clear();
+						FSM_PCF8574_GoToXY(0,0);
+						FSM_PCF8574_AddStringFromFlash(LNG_IF_SETUP_DATE);
+						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-6);
+						FSM_PCF8574_AddStringFromFlash(LNG_YES);
+						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-2);
+						FSM_PCF8574_AddStringFromFlash(LNG_NO);
+
+						// Draw cursor position
+						switch(device.idx_curr) {
+
+							case 1: {
+								FSM_PCF8574_GoToXY(1,4);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								break;
+							}
+
+							case 2: {
+								FSM_PCF8574_GoToXY(1,7);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								break;
+							}
+
+							case 3: {
+								FSM_PCF8574_GoToXY(1,10);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								break;
+							}
+
+							case 4: {
+								FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-7);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								break;
+							}
+
+							case 5: {
+								FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-3);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								break;
+							}
+
+							default: {
+								FSM_PCF8574_GoToXY(1,1);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								break;
+							}
+						}
+					}
+					// Draw DATE data
+					FSM_PCF8574_GoToXY(2,0);
+					FSM_PCF8574_AddStringFromFlash((char *)LNG_DOW[rtc.dow]);
+					FSM_PCF8574_GoToXY(2,4);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.day, buff, 0, 2));
+					FSM_PCF8574_AddStringFromFlash(LNG_SMB_SLASH);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.month, buff, 0, 2));
+					FSM_PCF8574_AddStringFromFlash(LNG_SMB_SLASH);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.year, buff, 0, 2));
+					break;
+				}
+
+				case DEVICE_MODE_DATETIME_SET_TIME: {
+					if(device.flags._idx_changed) { // <- Index was changed - full refresh
+						// Flush idx changed flag
+						device.flags._idx_changed=0;
+						// Prepare display static data
+						//     Setup time:
+						//
+						//	   00:00:00
+						//     Save?         Yes No
+						FSM_PCF8574_Clear();
+						FSM_PCF8574_GoToXY(0,0);
+						FSM_PCF8574_AddStringFromFlash(LNG_IF_SETUP_TIME);
+						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-6);
+						FSM_PCF8574_AddStringFromFlash(LNG_YES);
+						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-2);
+						FSM_PCF8574_AddStringFromFlash(LNG_NO);
+
+						// Draw cursor position
+						switch(device.idx_curr) {
+
+							case 1: {
+								FSM_PCF8574_GoToXY(1,3);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								break;
+							}
+
+							case 2: {
+								FSM_PCF8574_GoToXY(1,6);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								break;
+							}
+
+							case 3: {
+								FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-7);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								break;
+							}
+
+							case 4: {
+								FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-3);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								break;
+							}
+
+							default: {
+								FSM_PCF8574_GoToXY(1,0);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								break;
+							}
+						}
+					}
+					// Draw TIME data
+					FSM_PCF8574_GoToXY(2,0);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.hour, buff, 0, 2));
+					FSM_PCF8574_AddStringFromFlash(LNG_SMB_COLON);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.min, buff, 0, 2));
+					FSM_PCF8574_AddStringFromFlash(LNG_SMB_COLON);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.sec, buff, 0, 2));
+					break;
+				}
+
 				default: {
 					FSM_PCF8574_Clear();
 					break;
