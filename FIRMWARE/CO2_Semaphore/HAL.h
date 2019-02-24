@@ -30,7 +30,7 @@
 
 //------------------------------ Measurement timer configuration
 #define MEASURING_TMR_CNT				TCNT0
-#define MEASURING_TMR_INIT()			{ TCCR0A=0; TCCR0B=1<<CS01; TIMSK0&=~(1<<TOIE0); MEASURING_TMR_CNT=0; }		// 1us
+#define MEASURING_TMR_INIT()			{ TCCR0A=0; TCCR0B=1<<CS01; TIMSK0 =0; MEASURING_TMR_CNT=0; }		// 1us
 
 //------------------------------ UART configuration
 #define UBRR_CONST						((F_CPU/(BAUDRATE * 16)) - 1)
@@ -111,6 +111,7 @@
 #define DHT_PORT						PORTD
 #define DHT_PIN							PIND
 #define DHT_PIN_MASK					(1<<6)
+#define DHT_INIT()						{ ACSR = (1<<ACD); } //<- Analog comparator must be OFF
 #define DHT_PIN_STATE					(DHT_PIN & DHT_PIN_MASK)
 
 //------------------------------ Configuration IO for GREEN LED

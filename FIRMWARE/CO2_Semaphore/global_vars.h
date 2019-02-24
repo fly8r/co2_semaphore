@@ -130,17 +130,19 @@ enum	DHT_ERRORS_ENUM
 {
 	DHT_ERROR_NO_ERROR,
 	DHT_ERROR_NO_DEVICE,
-	DHT_ERROR_TIMEOUT
+	DHT_ERROR_READY_TIMEOUT,
+	DHT_ERROR_TIMEOUT,
+	DHT_ERROR_CRC
 };
 
 typedef struct
 {
-	uint8_t		_failed;
+	uint8_t		_failed, _error;
 	enum		DHT_ERRORS_ENUM		error;
 	struct
 	{
+		uint16_t	h, t;
 		uint8_t		crc;
-		uint16_t	t, h;
 	} data;
 	struct
 	{

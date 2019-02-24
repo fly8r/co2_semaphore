@@ -101,6 +101,8 @@ inline void InitGPIO(void)
 	UART_TX_INTERRUPT_ENABLE();
 	// Initialize RTC IRQ input INT0
 	X1226_IRQ_INIT();
+	// Initialization DHT sensor port
+	DHT_INIT();
 	// Initialize button port
 	BTN_INIT();
 	// Initialize encoder port
