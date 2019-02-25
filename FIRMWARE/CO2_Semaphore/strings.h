@@ -37,7 +37,10 @@ extern	const	char
 		LNG_DM1_S4[];
 
 extern	const	char
-		LNG_DM_MAIN_S4[];
+		LNG_DM_MAIN_S4[],
+		LNG_DM_SETUP_DATE[],
+		LNG_DM_SETUP_TIME[],
+		LNG_DM_SETUP_LCD_BL[];
 
 extern	const	char
 		LNG_SMB_ANGLE_BRACKET_RIGHT[],
@@ -72,10 +75,6 @@ extern	const	char
 		LNG_MENU_ITEM_MONITORING_H[],
 		LNG_MENU_ITEM_MAIN_SCREEN[],
 		LNG_MENU_ITEM_UP[];
-
-extern	const	char
-		LNG_IF_SETUP_DATE[],
-		LNG_IF_SETUP_TIME[];
 
 extern	const	char
 		LNG_MONDAY[],

@@ -87,6 +87,14 @@ void FSM_SYSTEM_Process(void)
 									break;
 								}
 
+								case MENU_ACTION_LCD_BL_SET: {
+									// Change device mode
+									device.mode = DEVICE_MODE_LCD_BL_SET;
+									// Set data IDX change flag for refresh screen
+									device.flags._idx_changed=1;
+									break;
+								}
+
 
 								default: break;
 							}
@@ -147,7 +155,24 @@ void FSM_SYSTEM_Process(void)
 							return;
 						}
 
+						case DEVICE_MODE_LCD_BL_SET: {
+							// Set data IDX change flag for refresh screen
+							device.flags._idx_changed=1;
+							// Increment current data index
+							if(device.idx_curr++ > 0) {
 
+
+								// Flush current data index
+								device.idx_curr=0;
+								// Set current device mode
+								device.mode = DEVICE_MODE_SHOW_MENU;
+								// Redraw display flag when menu changed
+								device.flags._menu_changed=1;
+							}
+							// Send command for refresh display
+							SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+							return;
+						}
 
 						default: break;
 					}
@@ -222,7 +247,7 @@ void FSM_SYSTEM_Process(void)
 							// Answer position change ->    Y   N
 							if(device.idx_curr == 3) {
 								device.idx_curr++;
-								} else if(device.idx_curr == 4) {
+							} else if(device.idx_curr == 4) {
 								device.idx_curr--;
 							}
 							// Set idx change flag for display full refresh
@@ -245,6 +270,24 @@ void FSM_SYSTEM_Process(void)
 						break;
 					}
 
+					case DEVICE_MODE_LCD_BL_SET: {
+
+						if(device.idx_curr > 0) {
+							// Answer position change ->    Y   N
+							if(device.idx_curr == 1) {
+								device.idx_curr++;
+							} else if(device.idx_curr == 2) {
+								device.idx_curr--;
+							}
+							// Set idx change flag for display full refresh
+							device.flags._idx_changed=1;
+						} else {
+
+						}
+						// Send message to refresh display
+						SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+						break;
+					}
 
 					default: break;
 				}

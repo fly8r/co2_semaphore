@@ -292,7 +292,7 @@ void FSM_LCD_Process(void)
 						//     Save?         Yes No
 						FSM_PCF8574_Clear();
 						FSM_PCF8574_GoToXY(0,0);
-						FSM_PCF8574_AddStringFromFlash(LNG_IF_SETUP_DATE);
+						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_DATE);
 						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-6);
 						FSM_PCF8574_AddStringFromFlash(LNG_YES);
 						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-2);
@@ -361,7 +361,7 @@ void FSM_LCD_Process(void)
 						//     Save?         Yes No
 						FSM_PCF8574_Clear();
 						FSM_PCF8574_GoToXY(0,0);
-						FSM_PCF8574_AddStringFromFlash(LNG_IF_SETUP_TIME);
+						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_TIME);
 						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-6);
 						FSM_PCF8574_AddStringFromFlash(LNG_YES);
 						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-2);
@@ -410,6 +410,49 @@ void FSM_LCD_Process(void)
 					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.sec, buff, 0, 2));
 					break;
 				}
+
+				case DEVICE_MODE_LCD_BL_SET: {
+					if(device.flags._idx_changed) { // <- Index was changed - full refresh
+						// Flush idx changed flag
+						device.flags._idx_changed=0;
+						// Prepare display static data
+						//     LCD backlight:
+						//				  __
+						//	   Level ->  100
+						//     Save?         Yes No
+						FSM_PCF8574_Clear();
+						FSM_PCF8574_GoToXY(0,0);
+						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_LCD_BL);
+						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-6);
+						FSM_PCF8574_AddStringFromFlash(LNG_YES);
+						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-2);
+						FSM_PCF8574_AddStringFromFlash(LNG_NO);
+
+						// Draw cursor position
+						switch(device.idx_curr) {
+							case 1: {
+								FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-7);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								break;
+							}
+
+							case 2: {
+								FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-3);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								break;
+							}
+
+							default: {
+								FSM_PCF8574_GoToXY(1,12);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								break;
+							}
+						}
+
+					}
+					break;
+				}
+
 
 				default: {
 					FSM_PCF8574_Clear();

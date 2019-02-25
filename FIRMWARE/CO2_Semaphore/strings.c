@@ -106,7 +106,10 @@ const	char
 			LNG_DM1_S4[]								PROGMEM = " -> CO2 ...";
 
 const	char
-			LNG_DM_MAIN_S4[]							PROGMEM = "   \xDF""C    %       ppm";
+			LNG_DM_MAIN_S4[]							PROGMEM = "   \xDF""C    %       ppm",
+			LNG_DM_SETUP_DATE[]							PROGMEM = "Setup date:\r\n\r\n\r\nSave?",
+			LNG_DM_SETUP_TIME[]							PROGMEM = "Setup time:\r\n\r\n\r\nSave?",
+			LNG_DM_SETUP_LCD_BL[]						PROGMEM = "LCD backlight:\r\n\r\nLevel ->\r\nSave?";
 
 
 const	char
@@ -144,9 +147,6 @@ const	char
 			LNG_MENU_ITEM_MAIN_SCREEN[]					PROGMEM = "Main screen",
 			LNG_MENU_ITEM_UP[]							PROGMEM = "*Up";
 
-const	char
-			LNG_IF_SETUP_DATE[]							PROGMEM = "Setup date:\r\n\r\n\r\nSave?",
-			LNG_IF_SETUP_TIME[]							PROGMEM = "Setup time:\r\n\r\n\r\nSave?";
 
 const	char
 			LNG_MONDAY[]								PROGMEM = "Mon",
