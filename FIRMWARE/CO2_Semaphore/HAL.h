@@ -22,15 +22,15 @@
 #define SYSTICK_TIME_MS					1
 #define SYSTICK_PRESCALER				64UL
 #define SYSTICK_OCR_CONST				((F_CPU*SYSTICK_TIME_MS) / (SYSTICK_PRESCALER*1000))
-#define SYSTICK_TIMER_COUNTER           TCNT2
-#define SYSTICK_TIMER_OCR               OCR2A
-#define SYSTICK_TIMER_INIT()            { TCCR2A=1<<WGM21; TCCR2B=1<<CS22; SYSTICK_TIMER_OCR=SYSTICK_OCR_CONST; SYSTICK_TIMER_COUNTER=0; }
-#define SYSTICK_INTERRUPT_ENABLE()      { TIMSK2 |= 1<<OCIE2A; }
-#define SYSTICK_INTERRUPT_DISABLE()     { TIMSK2 &= ~(1<<OCIE2A); }
+#define SYSTICK_TIMER_COUNTER           TCNT1
+#define SYSTICK_TIMER_OCR               OCR1A
+#define SYSTICK_TIMER_INIT()            { TCCR1A=0; TCCR1B=(1<<WGM12|1<<CS11|1<<CS10); SYSTICK_TIMER_OCR=SYSTICK_OCR_CONST; SYSTICK_TIMER_COUNTER=0; }
+#define SYSTICK_INTERRUPT_ENABLE()      { TIMSK1 |= 1<<OCIE1A; }
+#define SYSTICK_INTERRUPT_DISABLE()     { TIMSK1 &= ~(1<<OCIE1A); }
 
 //------------------------------ Measurement timer configuration
-#define MEASURING_TMR_CNT				TCNT0
-#define MEASURING_TMR_INIT()			{ TCCR0A=0; TCCR0B=1<<CS01; TIMSK0 =0; MEASURING_TMR_CNT=0; }		// 1us
+#define MEASURING_TMR_CNT				TCNT2
+#define MEASURING_TMR_INIT()			{ ASSR=0; TCCR2A=0; TCCR2B=(1<<CS21); TIMSK2&=~(1<<TOIE2); MEASURING_TMR_CNT=0; }		// 1us
 
 //------------------------------ UART configuration
 #define UBRR_CONST						((F_CPU/(BAUDRATE * 16)) - 1)
@@ -82,7 +82,7 @@
 #define BL_CTRL_MASK					(1<<5)
 #define BL_CTRL_ON()					{ BL_CTRL_PORT |= BL_CTRL_MASK; }
 #define BL_CTRL_OFF()					{ BL_CTRL_PORT &= ~BL_CTRL_MASK; }
-#define BL_CTRL_INIT()					{ BL_CTRL_DDR |= BL_CTRL_MASK; BL_CTRL_ON(); }
+#define BL_CTRL_INIT()					{ TCCR0A=(1<<WGM01|1<<WGM00|1<<COM0B1); TCCR0B=(1<<CS01|1<<CS00); OCR0B=55; BL_CTRL_DDR|=BL_CTRL_MASK; }
 
 //------------------------------ RTC configuration
 #define X1226_CCR_ADDRESS				0b11011110				// CCR memory access address
