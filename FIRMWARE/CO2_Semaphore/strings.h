@@ -31,13 +31,8 @@ extern  const	char
 		LNG_SW_VERSION[];
 
 extern	const	char
-		LNG_DM1_S1[],
-		LNG_DM1_S2[],
-		LNG_DM1_S3[],
-		LNG_DM1_S4[];
-
-extern	const	char
-		LNG_DM_MAIN_S4[],
+		LNG_DM_SCHK[],
+		LNG_DM_MAIN[],
 		LNG_DM_SETUP_DATE[],
 		LNG_DM_SETUP_TIME[],
 		LNG_DM_SETUP_LCD_BL[];

@@ -22,8 +22,8 @@ void FSM_PCF8574_AddByteToQueue(uint8_t byte, uint8_t type, uint8_t f_half, cons
 void FSM_PCF8574_CreateCharacter(char code, char *pattern);
 void FSM_PCF8574_CreateCharacterFromFlash(char code, const char *pattern);
 void FSM_PCF8574_GoToXY(uint8_t row, uint8_t col);
-void FSM_PCF8574_AddString(char * str);
-void FSM_PCF8574_AddStringFromFlash(const char * str);
+void FSM_PCF8574_AddString(char * str, uint8_t start_row, uint8_t start_col);
+void FSM_PCF8574_AddStringFromFlash(const char * str, uint8_t start_row, uint8_t start_col);
 void FSM_PCF8574_AddRAWChar(char chr);
 void FSM_PCF8574_AddRAWCharFromFlash(const char * chr);
 void FSM_PCF8574_Clear(void);
@@ -224,20 +224,25 @@ void FSM_PCF8574_CreateCharacterFromFlash(char code, const char *pattern)
 void FSM_PCF8574_GoToXY(uint8_t row, uint8_t col)
 {
 	uint8_t addr=0;
+
+	// Store row value
+	pcf8574.last_row = row;
 	if(row & 0x1) addr=0x40;				// Odd row is similarly has address 0x40
 	if(row > 1) addr += PCF8574_COLS;		// For 4 rows display and row > 1 add address shift
 	// Calculate address with Col shift
 	addr += col;
 	// Set address to display DRAM
-	FSM_PCF8574_AddByteToQueue(PCF8574_CMD_DDRAM_ADDR | addr, PCF8574_COMMAND, PCF8574_BYTE_FULL, 2);
-	// Store row value
-	pcf8574.last_row = row;
+	FSM_PCF8574_AddByteToQueue(PCF8574_CMD_DDRAM_ADDR | addr, PCF8574_COMMAND, PCF8574_BYTE_FULL, 1);
 }
 
 /* Add string to LCD */
-void FSM_PCF8574_AddString(char * str)
+void FSM_PCF8574_AddString(char * str, uint8_t start_row, uint8_t start_col)
 {
 	char chr;
+
+	// Goto Row, Col position
+	FSM_PCF8574_GoToXY(start_row, start_col);
+
 	while ((chr = *str)) {
 		switch(chr) {
 			// Goto new line
@@ -270,9 +275,13 @@ void FSM_PCF8574_AddString(char * str)
 }
 
 /* Add string from flash to LCD */
-void FSM_PCF8574_AddStringFromFlash(const char * str)
+void FSM_PCF8574_AddStringFromFlash(const char * str, uint8_t start_row, uint8_t start_col)
 {
 	char chr;
+
+	// Goto Row, Col position
+	FSM_PCF8574_GoToXY(start_row, start_col);
+	// Draw string
 	while ((chr = pgm_read_byte(str))) {
 		switch(chr) {
 			// Goto new line
@@ -320,6 +329,7 @@ void FSM_PCF8574_AddRAWCharFromFlash(const char *chr)
 /* Clear LCD display */
 void FSM_PCF8574_Clear(void)
 {
-	FSM_PCF8574_AddByteToQueue(PCF8574_CMD_CLEAR_DISPLAY, PCF8574_COMMAND, PCF8574_BYTE_FULL, 2);
+	FSM_PCF8574_AddByteToQueue(PCF8574_CMD_CLEAR_DISPLAY, PCF8574_COMMAND, PCF8574_BYTE_FULL, 3);
+	FSM_PCF8574_AddByteToQueue(PCF8574_CMD_SHIFT_MODE | PCF8574_OPT_SHIFT_CURSOR | PCF8574_OPT_SHIFT_RIGHT, PCF8574_COMMAND, PCF8574_BYTE_FULL, 1);
 	pcf8574.last_row=0;
 }

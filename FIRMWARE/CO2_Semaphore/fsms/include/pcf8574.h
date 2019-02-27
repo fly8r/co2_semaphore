@@ -132,9 +132,9 @@ void FSM_PCF8574_CreateCharacterFromFlash(char code, const char *pattern);
 // Set cursor to position
 void FSM_PCF8574_GoToXY(uint8_t row, uint8_t col);
 // Add string to LCD
-void FSM_PCF8574_AddString(char * str);
+void FSM_PCF8574_AddString(char * str, uint8_t start_row, uint8_t start_col);
 // Add string from flash to LCD
-void FSM_PCF8574_AddStringFromFlash(const char * str);
+void FSM_PCF8574_AddStringFromFlash(const char * str, uint8_t start_row, uint8_t start_col);
 // Add char to LCD
 void FSM_PCF8574_AddRAWChar(char chr);
 // Add char from flash to LCD

@@ -58,14 +58,10 @@ void FSM_LCD_Process(void)
 			//   ### ###
 			//  SEMAPHORE
 			FSM_LCD_AddCustomCharStringToXYFromFlash(LNG_SPLASH_LOGO_S1, 0, 3);
-			FSM_PCF8574_GoToXY(0,9);
-			FSM_PCF8574_AddStringFromFlash(LNG_SPLASH_LOGO_S1_1);
-			FSM_PCF8574_GoToXY(3,2);
-			FSM_PCF8574_AddStringFromFlash(LNG_SPLASH_LOGO_S4);
-			FSM_PCF8574_GoToXY(0,13);
-			FSM_PCF8574_AddStringFromFlash(LNG_HW_VERSION);
-			FSM_PCF8574_GoToXY(1,13);
-			FSM_PCF8574_AddStringFromFlash(LNG_SW_VERSION);
+			FSM_PCF8574_AddStringFromFlash(LNG_SPLASH_LOGO_S1_1, 0, 9);
+			FSM_PCF8574_AddStringFromFlash(LNG_SPLASH_LOGO_S4, 3, 2);
+			FSM_PCF8574_AddStringFromFlash(LNG_HW_VERSION, 0, 13);
+			FSM_PCF8574_AddStringFromFlash(LNG_SW_VERSION, 1, 13);
 			// Prepare SPLASH show timeout countdown
 			ResetTimer(TIMER_LCD);
 			// Goto waiting SHOW timeout
@@ -112,10 +108,7 @@ void FSM_LCD_Process(void)
 			//  -> RTC ...
 			//  -> DHT ...
 			//  -> CO2 ...
-			FSM_PCF8574_AddStringFromFlash(LNG_DM1_S1);
-			FSM_PCF8574_AddStringFromFlash(LNG_DM1_S2);
-			FSM_PCF8574_AddStringFromFlash(LNG_DM1_S3);
-			FSM_PCF8574_AddStringFromFlash(LNG_DM1_S4);
+			FSM_PCF8574_AddStringFromFlash(LNG_DM_SCHK, 0, 0);
 			// Goto sensors test result
 			FSM_state = FSM_LCD_STATE_ANIMATION_SENSORS_STATE_SCREEN;
 			// Flush FSM timer for process animation
@@ -167,11 +160,9 @@ void FSM_LCD_Process(void)
 				}
 				/* Draw state */
 				if(_presence) {
-					FSM_PCF8574_GoToXY(current_row, PCF8574_COLS-2);
-					FSM_PCF8574_AddStringFromFlash(LNG_OK);
+					FSM_PCF8574_AddStringFromFlash(LNG_OK, current_row, PCF8574_COLS-2);
 				} else {
-					FSM_PCF8574_GoToXY(current_row, PCF8574_COLS-4);
-					FSM_PCF8574_AddStringFromFlash(LNG_FAIL);
+					FSM_PCF8574_AddStringFromFlash(LNG_FAIL, current_row, PCF8574_COLS-4);
 				}
 
 				// Flush FSM timer for process animations
@@ -194,49 +185,41 @@ void FSM_LCD_Process(void)
 						// Clear display
 						FSM_PCF8574_Clear();
 						// Load first line of splash string to display
-						FSM_PCF8574_GoToXY(0, PCF8574_COLS-3);
-						FSM_PCF8574_AddStringFromFlash(LNG_SMB_POINT);
-						FSM_PCF8574_GoToXY(3, 0);
-						FSM_PCF8574_AddStringFromFlash(LNG_DM_MAIN_S4);
+						FSM_PCF8574_AddStringFromFlash(LNG_DM_MAIN, 0, PCF8574_COLS-3);
 					}
 
-					// Draw date data
-					FSM_PCF8574_GoToXY(0, PCF8574_COLS-5);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.day, buff, 0, 2));
-					FSM_PCF8574_GoToXY(0, PCF8574_COLS-2);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.month, buff, 0, 2));
-					FSM_PCF8574_GoToXY(1, PCF8574_COLS-4);
-					FSM_PCF8574_AddStringFromFlash((char *)LNG_DOW[rtc.dow]);
-					// Draw T data
-					FSM_PCF8574_GoToXY(3, 0);
-					if(dht.temperature.sign) {
-						FSM_PCF8574_AddStringFromFlash(LNG_SMB_MINUS);
-					} else {
-						FSM_PCF8574_AddStringFromFlash(LNG_SMB_SPACE);
-					}
-					FSM_PCF8574_AddString(utoa_cycle_sub8(dht.temperature.value, buff, 1, 2));
-					// Draw H data
-					FSM_PCF8574_GoToXY(3, 7);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(dht.humidity.value, buff, 1, 2));
-					// Draw CO2 data
-					FSM_PCF8574_GoToXY(3,13);
-					FSM_PCF8574_AddString(utoa_cycle_sub16(mhz19b.value, buff, 4));
-					FSM_PCF8574_GoToXY(3,12);
-					if(mhz19b._error) {
-						FSM_PCF8574_AddStringFromFlash(PSTR("!"));
-					} else {
-						FSM_PCF8574_AddStringFromFlash(LNG_SMB_SPACE);
-					}
 					// Draw big clock data
 					uint8_t pos = FSM_LCD_AddCustomCharStringToXY(utoa_cycle_sub8(rtc.hour, buff, 1, 2), 0, 0);
 					FSM_LCD_AddCustomCharStringToXY(utoa_cycle_sub8(rtc.min, buff, 0, 2), 0, ++pos);
 					// Draw blinking colon
-					FSM_PCF8574_GoToXY(1,6);
 					if((_colon_blink ^= 0x1)) {
-						FSM_PCF8574_AddStringFromFlash(LNG_SMB_COLON);
+						FSM_PCF8574_AddStringFromFlash(LNG_SMB_COLON, 1, 6);
 					} else {
-						FSM_PCF8574_AddStringFromFlash(LNG_SMB_SPACE);
+						FSM_PCF8574_AddStringFromFlash(LNG_SMB_SPACE, 1, 6);
 					}
+
+					// Draw date data
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.day, buff, 0, 2), 0, PCF8574_COLS-5);
+					//FSM_PCF8574_AddStringFromFlash(LNG_SMB_POINT, 0, PCF8574_COLS-3);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.month, buff, 0, 2), 0, PCF8574_COLS-2);
+					FSM_PCF8574_AddStringFromFlash((char *)LNG_DOW[rtc.dow], 1, PCF8574_COLS-4);
+					// Draw T data
+					if(dht.temperature.sign) {
+						FSM_PCF8574_AddStringFromFlash(LNG_SMB_MINUS, 3, 0);
+					} else {
+						FSM_PCF8574_AddStringFromFlash(LNG_SMB_SPACE, 3, 0);
+					}
+					FSM_PCF8574_AddString(utoa_cycle_sub8(dht.temperature.value, buff, 1, 2), 3, 1);
+					// Draw H data
+					FSM_PCF8574_AddString(utoa_cycle_sub8(dht.humidity.value, buff, 1, 2), 3, 7);
+					// Draw CO2 data
+					FSM_PCF8574_AddString(utoa_cycle_sub16(mhz19b.value, buff, 4), 3, 13);
+					if(mhz19b._error) {
+						FSM_PCF8574_AddStringFromFlash(PSTR("!"), 3, 12);
+					} else {
+						FSM_PCF8574_AddStringFromFlash(LNG_SMB_SPACE, 3, 12);
+					}
+
 					// /@TODO: Need optimization
 					break;
 				}
@@ -261,19 +244,16 @@ void FSM_LCD_Process(void)
 						// Draw menu on the LCD line by line
 						for(uint8_t i=0; i < PCF8574_ROWS; i++) {
 							// Draw cursor
-							FSM_PCF8574_GoToXY(i,0);
 							if(device.menu_cursor == i) {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, i, 0);
 							} else {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_SPACE);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_SPACE, i, 0);
 							}
 							// Draw menu item title
 							uint8_t shift = i-device.menu_cursor;
-							FSM_PCF8574_GoToXY(i,1);
-							FSM_PCF8574_AddStringFromFlash(MENU_GetMenuTextByShift(shift));
+							FSM_PCF8574_AddStringFromFlash(MENU_GetMenuTextByShift(shift), i, 1);
 							// Draw subcategory symbol
-							FSM_PCF8574_GoToXY(i,PCF8574_COLS-2);
-							FSM_PCF8574_AddStringFromFlash(MENU_GetChildMenuSymbolByShift(shift));
+							FSM_PCF8574_AddStringFromFlash(MENU_GetChildMenuSymbolByShift(shift), i, PCF8574_COLS-2);
 						}
 						// Store last menu item pointer
 						last_menu_item = selected_menu_item;
@@ -291,62 +271,51 @@ void FSM_LCD_Process(void)
 						//	   Fri 01/01/00
 						//     Save?         Yes No
 						FSM_PCF8574_Clear();
-						FSM_PCF8574_GoToXY(0,0);
-						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_DATE);
-						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-6);
-						FSM_PCF8574_AddStringFromFlash(LNG_YES);
-						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-2);
-						FSM_PCF8574_AddStringFromFlash(LNG_NO);
+						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_DATE, 0, 0);
+						FSM_PCF8574_AddStringFromFlash(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
+						FSM_PCF8574_AddStringFromFlash(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
 
 						// Draw cursor position
 						switch(device.idx_curr) {
 
 							case 1: {
-								FSM_PCF8574_GoToXY(1,4);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 4);
 								break;
 							}
 
 							case 2: {
-								FSM_PCF8574_GoToXY(1,7);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 7);
 								break;
 							}
 
 							case 3: {
-								FSM_PCF8574_GoToXY(1,10);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 10);
 								break;
 							}
 
 							case 4: {
-								FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-7);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
 								break;
 							}
 
 							case 5: {
-								FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-3);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
 								break;
 							}
 
 							default: {
-								FSM_PCF8574_GoToXY(1,1);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 1);
 								break;
 							}
 						}
 					}
 					// Draw DATE data
-					FSM_PCF8574_GoToXY(2,0);
-					FSM_PCF8574_AddStringFromFlash((char *)LNG_DOW[rtc.dow]);
-					FSM_PCF8574_GoToXY(2,4);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.day, buff, 0, 2));
-					FSM_PCF8574_AddStringFromFlash(LNG_SMB_SLASH);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.month, buff, 0, 2));
-					FSM_PCF8574_AddStringFromFlash(LNG_SMB_SLASH);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.year, buff, 0, 2));
+					FSM_PCF8574_AddStringFromFlash((char *)LNG_DOW[rtc.dow], 2, 0);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.day, buff, 0, 2), 2, 4);
+					FSM_PCF8574_AddStringFromFlash(LNG_SMB_SLASH, 2, 6);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.month, buff, 0, 2), 2, 7);
+					FSM_PCF8574_AddStringFromFlash(LNG_SMB_SLASH, 2, 9);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.year, buff, 0, 2), 2, 10);
 					break;
 				}
 
@@ -360,54 +329,45 @@ void FSM_LCD_Process(void)
 						//	   00:00:00
 						//     Save?         Yes No
 						FSM_PCF8574_Clear();
-						FSM_PCF8574_GoToXY(0,0);
-						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_TIME);
-						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-6);
-						FSM_PCF8574_AddStringFromFlash(LNG_YES);
-						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-2);
-						FSM_PCF8574_AddStringFromFlash(LNG_NO);
+						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_TIME, 0, 0);
+						FSM_PCF8574_AddStringFromFlash(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
+						FSM_PCF8574_AddStringFromFlash(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
 
 						// Draw cursor position
 						switch(device.idx_curr) {
 
 							case 1: {
-								FSM_PCF8574_GoToXY(1,3);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 3);
 								break;
 							}
 
 							case 2: {
-								FSM_PCF8574_GoToXY(1,6);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 6);
 								break;
 							}
 
 							case 3: {
-								FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-7);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
 								break;
 							}
 
 							case 4: {
-								FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-3);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
 								break;
 							}
 
 							default: {
-								FSM_PCF8574_GoToXY(1,0);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 0);
 								break;
 							}
 						}
 					}
 					// Draw TIME data
-					FSM_PCF8574_GoToXY(2,0);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.hour, buff, 0, 2));
-					FSM_PCF8574_AddStringFromFlash(LNG_SMB_COLON);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.min, buff, 0, 2));
-					FSM_PCF8574_AddStringFromFlash(LNG_SMB_COLON);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.sec, buff, 0, 2));
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.hour, buff, 0, 2), 2, 0);
+					FSM_PCF8574_AddStringFromFlash(LNG_SMB_COLON, 2, 2);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.min, buff, 0, 2), 2, 3);
+					FSM_PCF8574_AddStringFromFlash(LNG_SMB_COLON, 2, 5);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.sec, buff, 0, 2), 2, 6);
 					break;
 				}
 
@@ -421,30 +381,24 @@ void FSM_LCD_Process(void)
 						//	   Level ->  100
 						//     Save?         Yes No
 						FSM_PCF8574_Clear();
-						FSM_PCF8574_GoToXY(0,0);
-						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_LCD_BL);
-						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-6);
-						FSM_PCF8574_AddStringFromFlash(LNG_YES);
-						FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-2);
-						FSM_PCF8574_AddStringFromFlash(LNG_NO);
+						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_LCD_BL, 0, 0);
+						FSM_PCF8574_AddStringFromFlash(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
+						FSM_PCF8574_AddStringFromFlash(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
 
 						// Draw cursor position
 						switch(device.idx_curr) {
 							case 1: {
-								FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-7);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
 								break;
 							}
 
 							case 2: {
-								FSM_PCF8574_GoToXY(PCF8574_ROWS-1, PCF8574_COLS-3);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
 								break;
 							}
 
 							default: {
-								FSM_PCF8574_GoToXY(1,12);
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE);
+								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 12);
 								break;
 							}
 						}

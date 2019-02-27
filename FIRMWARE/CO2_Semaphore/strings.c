@@ -100,13 +100,8 @@ const	char
 			LNG_SW_VERSION[]							PROGMEM = "SW: 1.0";
 
 const	char
-			LNG_DM1_S1[]								PROGMEM = "Peripheral check:\r\n",
-			LNG_DM1_S2[]								PROGMEM = " -> RTC ...\r\n",
-			LNG_DM1_S3[]								PROGMEM = " -> DHT ...\r\n",
-			LNG_DM1_S4[]								PROGMEM = " -> CO2 ...";
-
-const	char
-			LNG_DM_MAIN_S4[]							PROGMEM = "   \xDF""C    %       ppm",
+			LNG_DM_SCHK[]								PROGMEM = "Peripheral check:\r\n -> RTC ...\r\n -> DHT ...\r\n -> CO2 ...",
+			LNG_DM_MAIN[]								PROGMEM = ".\r\n\r\n\r\n   \xDF""C    %       ppm",
 			LNG_DM_SETUP_DATE[]							PROGMEM = "Setup date:\r\n\r\n\r\nSave?",
 			LNG_DM_SETUP_TIME[]							PROGMEM = "Setup time:\r\n\r\n\r\nSave?",
 			LNG_DM_SETUP_LCD_BL[]						PROGMEM = "LCD backlight:\r\n\r\nLevel ->\r\nSave?";
