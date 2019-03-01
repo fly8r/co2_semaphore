@@ -402,6 +402,8 @@ void FSM_LCD_Process(void)
 								break;
 							}
 						}
+						//
+						FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.bl_value, buff, 1, 2), 2, 12);
 
 					}
 					break;

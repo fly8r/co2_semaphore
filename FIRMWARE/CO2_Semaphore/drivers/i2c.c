@@ -50,7 +50,7 @@ inline void I2C_TWIService(void)
 			if(i2c.transmit_type == I2C_TRANSMIT_TYPE_SARP) {
 				// Set to 1(R) lower bit in address - READ MODE
 				i2c.master.slave_addr |= 0x01;
-				} else {
+			} else {
 				// Set to 0(W) lower bit in address - WRITE MODE
 				i2c.master.slave_addr &= 0xFE;
 			}
@@ -72,7 +72,7 @@ inline void I2C_TWIService(void)
 			if(i2c.transmit_type == I2C_TRANSMIT_TYPE_SAWSARP) {
 				// Set to 1(W) lower bit in address - READ MODE
 				i2c.master.slave_addr |= 0x01;
-				} else {
+			} else {
 				// Set to 0(R) lower bit in address - WRITE MODE
 				i2c.master.slave_addr &= 0xFE;
 			}
@@ -98,7 +98,7 @@ inline void I2C_TWIService(void)
 				if(i2c.page.p_buff++ >= I2C_PAGE_WORD_LENGTH) i2c.page.p_buff=0;
 				// Decrement page address queue
 				i2c.page.q_length--;
-				} else if(i2c.master.q_length) { // <- Directly send data
+			} else if(i2c.master.q_length) { // <- Directly send data
 				// Prepare and send first data byte by mode
 				// Load data from buffer to I2C output register
 				TWDR = i2c.master.tx_buff[i2c.master.p_buff];
@@ -610,7 +610,7 @@ uint8_t I2C_RequestFrom(uint8_t addr, uint8_t length, uint8_t word_length, uint1
 		if(word_length == 2) {
 			i2c.page.buff[0] = HI(word_addr);
 			i2c.page.buff[1] = LO(word_addr);
-			} else {
+		} else {
 			i2c.page.buff[0] = LO(word_addr);
 		}
 		// Flush page word buffer pointer

@@ -41,6 +41,22 @@ enum DEVICE_CONCENTRATION_ENUM
 
 typedef struct
 {
+	struct {
+		uint8_t	bl_value;
+	} lcd;
+	struct {
+		uint8_t	from_hour, to_hour;
+		uint8_t from_min, to_min;
+	} buzzer;
+	struct {
+		uint16_t lvl_normal;
+		uint16_t lvl_medium;
+		uint16_t lvl_high;
+	} co2;
+} settings_t;
+
+typedef struct
+{
 	uint8_t							_ext_clock;
 	uint8_t							idx_curr, menu_cursor;
 	enum DEVICE_MODES_ENUM			mode;
@@ -50,6 +66,7 @@ typedef struct
 		uint8_t		_menu_changed,
 					_idx_changed;
 	} flags;
+	settings_t			settings;
 } device_data_t;
 extern	device_data_t	device;
 
@@ -66,6 +83,11 @@ typedef struct
 	int8_t		cal;
 } clock_data_t;
 extern		clock_data_t	rtc;
+
+/************************************************************************/
+/* system.h                                                             */
+/************************************************************************/
+extern		const			uint8_t			bl_pwm_table[];
 
 /************************************************************************/
 /* menu.h                                                               */

@@ -12,6 +12,7 @@
 volatile	static		uint8_t			FSM_state;
 static					leds_params_t	led_params;
 static					buzzer_data_t	buzzer_params;
+static					uint8_t			tmp;
 
 /* Max values for DATE setup */
 const uint8_t	min_date_values[]	PROGMEM = {0, 1, 1, 0};	// Dow, Day, Month, Year
@@ -19,6 +20,9 @@ const uint8_t	max_date_values[]	PROGMEM = {6,31,12,99}; // Dow, Day, Month, Year
 /* Max values for TIME setup */
 const uint8_t	min_time_values[]	PROGMEM = { 0, 0, 0};		// Hour, min, sec
 const uint8_t	max_time_values[]	PROGMEM = {23,59,59};	// Hour, min, sec
+
+/* EEPROM data */
+static					settings_t	EEMEM	ee_settings;
 
 
 /************************************************************************/
@@ -30,6 +34,10 @@ void FSM_SYSTEM_Init(void)
 	device.concentration_level = device.last_concentration_level = DEVICE_CONCENTRATION_UNKNOWN;
 	// Set default FSM state
 	FSM_state = FSM_SYSTEM_STATE_STARTUP;
+	// Waiting for EEPROM ready
+	while(!eeprom_is_ready());
+	// Read settings from eeprom
+	eeprom_read_block((void *)&device.settings, (void *)&ee_settings, sizeof(ee_settings));
 	// Flush FSM timer
 	ResetTimer(TIMER_SYSTEM);
 }
@@ -92,6 +100,8 @@ void FSM_SYSTEM_Process(void)
 									device.mode = DEVICE_MODE_LCD_BL_SET;
 									// Set data IDX change flag for refresh screen
 									device.flags._idx_changed=1;
+									// Store to tmp var lcd bl PWM value
+									tmp = device.settings.lcd.bl_value;
 									break;
 								}
 
@@ -279,11 +289,17 @@ void FSM_SYSTEM_Process(void)
 							} else if(device.idx_curr == 2) {
 								device.idx_curr--;
 							}
-							// Set idx change flag for display full refresh
-							device.flags._idx_changed=1;
 						} else {
-
+							// Rotation processing
+							if(*rotate > 0) {
+								if(++device.settings.lcd.bl_value > 10) device.settings.lcd.bl_value=0;
+							} else {
+								if(device.settings.lcd.bl_value-- == 0) device.settings.lcd.bl_value=10;
+							}
+							BL_CTRL_OCR=pgm_read_byte(bl_pwm_table + device.settings.lcd.bl_value);
 						}
+						// Set idx change flag for display full refresh
+						device.flags._idx_changed=1;
 						// Send message to refresh display
 						SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
 						break;

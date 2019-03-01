@@ -82,7 +82,8 @@
 #define BL_CTRL_MASK					(1<<5)
 #define BL_CTRL_ON()					{ BL_CTRL_PORT |= BL_CTRL_MASK; }
 #define BL_CTRL_OFF()					{ BL_CTRL_PORT &= ~BL_CTRL_MASK; }
-#define BL_CTRL_INIT()					{ TCCR0A=(1<<WGM01|1<<WGM00|1<<COM0B1); TCCR0B=(1<<CS01|1<<CS00); OCR0B=55; BL_CTRL_DDR|=BL_CTRL_MASK; }
+#define BL_CTRL_OCR						OCR0B
+#define BL_CTRL_INIT()					{ TCCR0A=(1<<WGM01|1<<WGM00|1<<COM0B1); TCCR0B=(1<<CS01|1<<CS00); BL_CTRL_OCR=55; BL_CTRL_DDR|=BL_CTRL_MASK; }
 
 //------------------------------ RTC configuration
 #define X1226_CCR_ADDRESS				0b11011110				// CCR memory access address

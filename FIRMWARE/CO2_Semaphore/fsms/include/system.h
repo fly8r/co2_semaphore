@@ -7,6 +7,7 @@
 #ifndef FSM_SYSTEM_H_
 #define FSM_SYSTEM_H_
 
+#include <avr/eeprom.h>
 #include "../../global_vars.h"
 #include "../../config.h"
 #include "../../HAL.h"
@@ -24,6 +25,8 @@ enum FSM_SYSTEM_STATES_ENUM
 	FSM_SYSTEM_STATE_STARTUP_COMPLETE,
 	FSM_SYSTEM_STATE_CONCENTRATION_PROCESSING,
 };
+
+
 
 /************************************************************************/
 /* MACROS                                                               */
