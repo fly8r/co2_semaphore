@@ -83,7 +83,7 @@ char * utoa_cycle_sub8(uint8_t value, char *buffer, uint8_t _trim_zero, uint8_t 
 	}
 	// Store last char as EOL
 	*ptr = 0;
-	
+
 	// Replace first zero to space
 	if(_trim_zero) {
 		for(uint8_t i=0;i<2; i++) {
@@ -143,4 +143,30 @@ uint8_t bcd2dec(uint8_t val)
 uint8_t dec2bcd(uint8_t val)
 {
 	return (val % 10) + ((val / 10) << 4);
+}
+
+/* Function for matching time */
+int8_t matchtime(uint16_t time1, uint16_t time2)
+{
+	if(time1 == time2) {
+		return 0;
+	} else if(time1 > time2) {
+		return 1;
+	} else {
+		return -1;
+	}
+}
+
+/* Check time range occurrence */
+uint8_t timeinrange(uint16_t chk_time, uint16_t start_time, uint16_t end_time)
+{
+	int8_t match = matchtime(start_time, end_time);
+	switch(match) {
+		// Variant #1: If time compared - return 1
+		case 0: { return 0; }
+		// Variant #2: If start time more then end time
+		case 1: { return (chk_time >= start_time || chk_time <= end_time); }
+		// Variant #3: If start time lower then end time
+		default: { return (chk_time >= start_time && chk_time <= end_time); }
+	}
 }

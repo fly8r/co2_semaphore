@@ -31,6 +31,7 @@ void FSM_LCD_Init(void)
 	FSM_state = FSM_LCD_STATE_LCD_INIT;
 	// Flush FSM timer
 	ResetTimer(TIMER_LCD);
+	ResetTimer(TIMER_LCD_BL);
 }
 
 void FSM_LCD_Process(void)
@@ -376,35 +377,70 @@ void FSM_LCD_Process(void)
 						// Flush idx changed flag
 						device.flags._idx_changed=0;
 						// Prepare display static data
-						//     LCD backlight:
-						//				  __
-						//	   Level ->  100
+						//     Default            8
+						//     By time            5
+						//     Range    14.00-15.00
 						//     Save?         Yes No
 						FSM_PCF8574_Clear();
 						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_LCD_BL, 0, 0);
 						FSM_PCF8574_AddStringFromFlash(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
 						FSM_PCF8574_AddStringFromFlash(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
+					}
 
-						// Draw cursor position
-						switch(device.idx_curr) {
-							case 1: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
-								break;
-							}
+					// Draw default bl pwm level
+					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.bl_pwm_default, buff, 1, 2), 0, PCF8574_COLS-2);
+					// Draw bl pwm level by time range
+					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.bl_pwm_by_time, buff, 1, 2), 1, PCF8574_COLS-2);
+					// Draw time range
+					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.from_hour, buff, 1, 2), 2, PCF8574_COLS-11);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.from_min, buff, 0, 2), 2, PCF8574_COLS-8);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.to_hour, buff, 1, 2), 2, PCF8574_COLS-5);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.to_min, buff, 0, 2), 2, PCF8574_COLS-2);
 
-							case 2: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
-								break;
-							}
+					// Draw cursor position
+					switch(device.idx_curr) {
 
-							default: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 12);
-								break;
-							}
+						case 1: {
+							FSM_PCF8574_GoToXY(1, PCF8574_COLS-1);
+							break;
 						}
-						//
-						FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.bl_value, buff, 1, 2), 2, 12);
 
+						case 2: {
+							FSM_PCF8574_GoToXY(2, PCF8574_COLS-10);
+							break;
+						}
+
+						case 3: {
+							FSM_PCF8574_GoToXY(2, PCF8574_COLS-7);
+							break;
+						}
+
+						case 4: {
+							FSM_PCF8574_GoToXY(2, PCF8574_COLS-4);
+							break;
+						}
+
+						case 5: {
+							FSM_PCF8574_GoToXY(2, PCF8574_COLS-1);
+							break;
+						}
+
+						case 6: {
+							FSM_PCF8574_AddByteToQueue(PCF8574_CMD_DISPLAY_MODE | PCF8574_OPT_DISPLAY_ENABLE | PCF8574_OPT_CURSOR_INVISIBLE, PCF8574_COMMAND, PCF8574_BYTE_FULL, 0);
+							FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
+							break;
+						}
+
+						case 7: {
+							FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
+							break;
+						}
+
+						default: {
+							FSM_PCF8574_AddByteToQueue(PCF8574_CMD_DISPLAY_MODE | PCF8574_OPT_DISPLAY_ENABLE | PCF8574_OPT_CURSOR_VISIBLE | PCF8574_OPT_CURSOR_IS_UNDERLINE, PCF8574_COMMAND, PCF8574_BYTE_FULL, 0);
+							FSM_PCF8574_GoToXY(0, PCF8574_COLS-1);
+							break;
+						}
 					}
 					break;
 				}
@@ -422,8 +458,30 @@ void FSM_LCD_Process(void)
 			return;
 		}
 
+		case FSM_LCD_STATE_BL_CTRL: {
+
+			uint16_t curr_time = (rtc.hour << 8) + rtc.min;
+			uint16_t start_time = (device.settings.lcd.from_hour << 8) + device.settings.lcd.from_min;
+			uint16_t end_time = (device.settings.lcd.to_hour << 8) + device.settings.lcd.to_min;
+
+			if(timeinrange(curr_time, start_time, end_time)) {
+				BL_CTRL_OCR = pgm_read_byte(bl_pwm_table + device.settings.lcd.bl_pwm_by_time);
+			} else {
+				BL_CTRL_OCR = pgm_read_byte(bl_pwm_table + device.settings.lcd.bl_pwm_default);
+			}
+
+			// Goto idle state
+			FSM_state = FSM_LCD_STATE_IDLE;
+			return;
+		}
+
 		/* Default work state */
 		case FSM_LCD_STATE_IDLE: {
+			if(GetTimer(TIMER_LCD_BL) >= LCD_BL_CTRL_PERIOD || GetMessage(MSG_LCD_BL_CTRL)) {
+				FSM_state = FSM_LCD_STATE_BL_CTRL;
+				ResetTimer(TIMER_LCD_BL);
+			}
+
 			if(GetTimer(TIMER_LCD) >= LCD_REFRESH_PERIOD || GetMessage(MSG_LCD_REFRESH_DISPLAY)) {
 				// Set next FSM state
 				FSM_state = FSM_LCD_STATE_REFRESH_SCREEN;

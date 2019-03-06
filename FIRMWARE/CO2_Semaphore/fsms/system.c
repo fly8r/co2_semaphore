@@ -12,14 +12,17 @@
 volatile	static		uint8_t			FSM_state;
 static					leds_params_t	led_params;
 static					buzzer_data_t	buzzer_params;
-static					uint8_t			tmp;
+static					settings_t		curr_settings;
 
 /* Max values for DATE setup */
 const uint8_t	min_date_values[]	PROGMEM = {0, 1, 1, 0};	// Dow, Day, Month, Year
 const uint8_t	max_date_values[]	PROGMEM = {6,31,12,99}; // Dow, Day, Month, Year
 /* Max values for TIME setup */
-const uint8_t	min_time_values[]	PROGMEM = { 0, 0, 0};		// Hour, min, sec
+const uint8_t	min_time_values[]	PROGMEM = { 0, 0, 0};	// Hour, min, sec
 const uint8_t	max_time_values[]	PROGMEM = {23,59,59};	// Hour, min, sec
+/* Max values for BL level */
+const uint8_t	min_bl_values[]		PROGMEM = { 0, 0, 0, 0, 0, 0};	// Lvl, Lvl, From hour, From min, To hour, To min
+const uint8_t	max_bl_values[]		PROGMEM = {10,10,23,59,23,59};  //
 
 /* EEPROM data */
 static					settings_t	EEMEM	ee_settings;
@@ -28,16 +31,20 @@ static					settings_t	EEMEM	ee_settings;
 /************************************************************************/
 /* FUNCTIONS                                                            */
 /************************************************************************/
+void FSM_SYSTEM_BackupSettings(void);
+void FSM_SYSTEM_RestoreSettings(void);
+void FSM_SYSTEM_LoadSettingsFromEEPROM(void);
+void FSM_SYSTEM_SaveSettingsToEEPROM(void);
+
+
 void FSM_SYSTEM_Init(void)
 {
 	// Set default concentration level to unknown
 	device.concentration_level = device.last_concentration_level = DEVICE_CONCENTRATION_UNKNOWN;
 	// Set default FSM state
 	FSM_state = FSM_SYSTEM_STATE_STARTUP;
-	// Waiting for EEPROM ready
-	while(!eeprom_is_ready());
-	// Read settings from eeprom
-	eeprom_read_block((void *)&device.settings, (void *)&ee_settings, sizeof(ee_settings));
+	// Load settings from EEPROM
+	FSM_SYSTEM_LoadSettingsFromEEPROM();
 	// Flush FSM timer
 	ResetTimer(TIMER_SYSTEM);
 }
@@ -100,8 +107,8 @@ void FSM_SYSTEM_Process(void)
 									device.mode = DEVICE_MODE_LCD_BL_SET;
 									// Set data IDX change flag for refresh screen
 									device.flags._idx_changed=1;
-									// Store to tmp var lcd bl PWM value
-									tmp = device.settings.lcd.bl_value;
+									// Backup settings
+									FSM_SYSTEM_BackupSettings();
 									break;
 								}
 
@@ -169,9 +176,14 @@ void FSM_SYSTEM_Process(void)
 							// Set data IDX change flag for refresh screen
 							device.flags._idx_changed=1;
 							// Increment current data index
-							if(device.idx_curr++ > 0) {
-
-
+							if(device.idx_curr++ > 5) {
+								if(device.idx_curr == 7) { // <- Save change
+									// Store settings to EEPROM
+									FSM_SYSTEM_SaveSettingsToEEPROM();
+								} else { // <- Not save change
+									// Load backup settings
+									FSM_SYSTEM_RestoreSettings();
+								}
 								// Flush current data index
 								device.idx_curr=0;
 								// Set current device mode
@@ -281,25 +293,34 @@ void FSM_SYSTEM_Process(void)
 					}
 
 					case DEVICE_MODE_LCD_BL_SET: {
+						uint8_t * d;
+						uint8_t min, max;
 
-						if(device.idx_curr > 0) {
+						// Get pointer to data DOW
+						d = (void *)&device.settings.lcd.bl_pwm_default;
+
+						if(device.idx_curr > 5) {
 							// Answer position change ->    Y   N
-							if(device.idx_curr == 1) {
+							if(device.idx_curr == 6) {
 								device.idx_curr++;
-							} else if(device.idx_curr == 2) {
+							} else if(device.idx_curr == 7) {
 								device.idx_curr--;
 							}
+							// Set idx change flag for display full refresh
+							device.flags._idx_changed=1;
 						} else {
+							// Get data pointer for change
+							d += device.idx_curr;
+							// Get min/max value for current data pointer
+							min = pgm_read_byte(min_bl_values + device.idx_curr);
+							max = pgm_read_byte(max_bl_values + device.idx_curr);
 							// Rotation processing
 							if(*rotate > 0) {
-								if(++device.settings.lcd.bl_value > 10) device.settings.lcd.bl_value=0;
+								if(++(*d) > max) *d = min;
 							} else {
-								if(device.settings.lcd.bl_value-- == 0) device.settings.lcd.bl_value=10;
+								if(--(*d) < min || *d >= max) *d = max;
 							}
-							BL_CTRL_OCR=pgm_read_byte(bl_pwm_table + device.settings.lcd.bl_value);
 						}
-						// Set idx change flag for display full refresh
-						device.flags._idx_changed=1;
 						// Send message to refresh display
 						SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
 						break;
@@ -434,4 +455,38 @@ void FSM_SYSTEM_Process(void)
 
 		default: break;
 	}
+}
+
+void FSM_SYSTEM_BackupSettings(void)
+{
+	uint8_t *src = (void *)&device.settings;
+	uint8_t *dst = (void *)&curr_settings;
+	for(uint8_t i=0; i<sizeof(curr_settings); i++) {
+		*(dst++) = *(src++);
+	}
+}
+
+void FSM_SYSTEM_RestoreSettings(void)
+{
+	uint8_t *src = (void *)&curr_settings;
+	uint8_t *dst = (void *)&device.settings;
+	for(uint8_t i=0; i<sizeof(curr_settings); i++) {
+		*(dst++) = *(src++);
+	}
+}
+
+void FSM_SYSTEM_LoadSettingsFromEEPROM(void)
+{
+	// Waiting for EEPROM ready
+	while(!eeprom_is_ready());
+	// Read settings from EEPROM
+	eeprom_read_block((void *)&device.settings, (void *)&ee_settings, sizeof(ee_settings));
+}
+
+void FSM_SYSTEM_SaveSettingsToEEPROM(void)
+{
+	// Waiting for EEPROM ready
+	while(!eeprom_is_ready());
+	// Store settings to EEPROM
+	eeprom_write_block((void *)&device.settings, (void *)&ee_settings, sizeof(device.settings));
 }

@@ -18,13 +18,14 @@
 #define		HOUR 				60 * MIN
 
 // Mas timers counter
-#define		MAX_TIMERS			11
+#define		MAX_TIMERS			12
 // Timers enum
 enum TIMERS_ENUM
 {
 	TIMER_SYSTEM=0,
 	TIMER_PCF8574,
 	TIMER_LCD,
+	TIMER_LCD_BL,
 	TIMER_X1226,
 	TIMER_DHT,
 	TIMER_MHZ19B,

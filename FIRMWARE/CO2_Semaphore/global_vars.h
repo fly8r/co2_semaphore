@@ -42,11 +42,13 @@ enum DEVICE_CONCENTRATION_ENUM
 typedef struct
 {
 	struct {
-		uint8_t	bl_value;
+		uint8_t	bl_pwm_default, bl_pwm_by_time;
+		uint8_t from_hour, from_min;
+		uint8_t to_hour, to_min;
 	} lcd;
 	struct {
-		uint8_t	from_hour, to_hour;
-		uint8_t from_min, to_min;
+		uint8_t	from_min, from_hour;
+		uint8_t to_min, to_hour;
 	} buzzer;
 	struct {
 		uint16_t lvl_normal;

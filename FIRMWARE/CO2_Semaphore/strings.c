@@ -104,7 +104,7 @@ const	char
 			LNG_DM_MAIN[]								PROGMEM = ".\r\n\r\n\r\n   \xDF""C    %       ppm",
 			LNG_DM_SETUP_DATE[]							PROGMEM = "Setup date:\r\n\r\n\r\nSave?",
 			LNG_DM_SETUP_TIME[]							PROGMEM = "Setup time:\r\n\r\n\r\nSave?",
-			LNG_DM_SETUP_LCD_BL[]						PROGMEM = "LCD backlight:\r\n\r\nLevel ->\r\nSave?";
+			LNG_DM_SETUP_LCD_BL[]						PROGMEM = "Default\r\nBy time\r\nRange      :  -  :\r\nSave?";
 
 
 const	char
