@@ -23,6 +23,9 @@ const uint8_t	max_time_values[]	PROGMEM = {23,59,59};	// Hour, min, sec
 /* Max values for BL level */
 const uint8_t	min_bl_values[]		PROGMEM = { 0, 0, 0, 0, 0, 0};	// Lvl, Lvl, From hour, From min, To hour, To min
 const uint8_t	max_bl_values[]		PROGMEM = {10,10,23,59,23,59};  //
+/* Max values for buzzer setup */
+const uint8_t	min_buzzer_values[]	PROGMEM = { 0, 0, 0, 0, 0, 0};	// On/off, On/Off, From hour, From min, To hour, To min
+const uint8_t	max_buzzer_values[]	PROGMEM = { 1, 1,23,59,23,59};
 
 /* EEPROM data */
 static					settings_t	EEMEM	ee_settings;
@@ -114,6 +117,17 @@ void FSM_SYSTEM_Process(void)
 									break;
 								}
 
+								case MENU_ACTION_BUZZER_SET: {
+									// Change device mode
+									device.mode = DEVICE_MODE_BUZZER_SET;
+									// Set flag that in menu setup
+									device.flags._setup = 1;
+									// Set data IDX change flag for refresh screen
+									device.flags._idx_changed=1;
+									// Backup settings
+									FSM_SYSTEM_BackupSettings();
+									break;
+								}
 
 								default: break;
 							}
@@ -175,6 +189,32 @@ void FSM_SYSTEM_Process(void)
 						}
 
 						case DEVICE_MODE_LCD_BL_SET: {
+							// Set data IDX change flag for refresh screen
+							device.flags._idx_changed=1;
+							// Increment current data index
+							if(device.idx_curr++ > 5) {
+								if(device.idx_curr == 7) { // <- Save change
+									// Store settings to EEPROM
+									FSM_SYSTEM_SaveSettingsToEEPROM();
+								} else { // <- Not save change
+									// Load backup settings
+									FSM_SYSTEM_RestoreSettings();
+								}
+								// Flush setup flag
+								device.flags._setup = 0;
+								// Flush current data index
+								device.idx_curr=0;
+								// Set current device mode
+								device.mode = DEVICE_MODE_SHOW_MENU;
+								// Redraw display flag when menu changed
+								device.flags._menu_changed=1;
+							}
+							// Send command for refresh display
+							SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+							return;
+						}
+
+						case DEVICE_MODE_BUZZER_SET: {
 							// Set data IDX change flag for refresh screen
 							device.flags._idx_changed=1;
 							// Increment current data index
@@ -331,6 +371,40 @@ void FSM_SYSTEM_Process(void)
 							}
 						}
 
+						// Send message to refresh display
+						SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+						break;
+					}
+
+					case DEVICE_MODE_BUZZER_SET: {
+						uint8_t * d;
+						uint8_t min, max;
+
+						// Get pointer to data DOW
+						d = (void *)&device.settings.buzzer._default_state;
+
+						if(device.idx_curr > 5) {
+							// Answer position change ->    Y   N
+							if(device.idx_curr == 6) {
+								device.idx_curr++;
+							} else if(device.idx_curr == 7) {
+								device.idx_curr--;
+							}
+							// Set idx change flag for display full refresh
+							device.flags._idx_changed=1;
+						} else {
+							// Get data pointer for change
+							d += device.idx_curr;
+							// Get min/max value for current data pointer
+							min = pgm_read_byte(min_bl_values + device.idx_curr);
+							max = pgm_read_byte(max_bl_values + device.idx_curr);
+							// Rotation processing
+							if(*rotate > 0) {
+								if(++(*d) > max) *d = min;
+								} else {
+								if(--(*d) < min || *d >= max) *d = max;
+							}
+						}
 
 						// Send message to refresh display
 						SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
@@ -343,7 +417,7 @@ void FSM_SYSTEM_Process(void)
 			}
 
 			/************************************************************************/
-			/* INDICATION CONTROL                                                   */
+			/* CONCENTRATION CONTROL                                                */
 			/************************************************************************/
 			if(!mhz19b._error && GetTimer(TIMER_SYSTEM) >= 1000) {
 				//
@@ -360,8 +434,6 @@ void FSM_SYSTEM_Process(void)
 				// Activate led
 				led_params._enable = 1;
 				led_params._active = 1;
-				// Enable buzzer control
-				buzzer_params._enable = 1;
 				// Set glow time to infinity
 				led_params.glow_time_ms = 0xFFFF;
 				switch(device.concentration_level) {

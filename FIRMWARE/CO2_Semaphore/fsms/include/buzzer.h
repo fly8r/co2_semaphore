@@ -12,6 +12,7 @@
 #include "../../HAL.h"
 #include "../../libs/include/messages.h"
 #include "../../libs/include/swtimers.h"
+#include "../../libs/include/tools.h"
 
 /************************************************************************/
 /* FSM states                                                           */
@@ -19,6 +20,7 @@
 enum FSM_BUZZER_STATES_ENUM
 {
 	FSM_BUZZER_STATE_IDLE=0,
+	FSM_BUZZER_STATE_WAIT_INIT,
 	FSM_BUZZER_STATE_PGM_PROCESSING,
 };
 

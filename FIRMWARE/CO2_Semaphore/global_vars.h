@@ -27,6 +27,7 @@ enum DEVICE_MODES_ENUM
 	DEVICE_MODE_DATETIME_SET_DATE,
 	DEVICE_MODE_DATETIME_SET_TIME,
 	DEVICE_MODE_LCD_BL_SET,
+	DEVICE_MODE_BUZZER_SET,
 };
 
 enum DEVICE_CONCENTRATION_ENUM
@@ -47,6 +48,7 @@ typedef struct
 		uint8_t to_hour, to_min;
 	} lcd;
 	struct {
+		uint8_t _default_state, _bytime_state;
 		uint8_t	from_hour, from_min;
 		uint8_t to_hour, to_min;
 	} buzzer;
@@ -102,6 +104,7 @@ enum MENU_ACTIONS_ENUM
 	MENU_ACTION_DATETIME_SET_TIME,
 	MENU_ACTION_DATETIME_SET_CAL,
 	MENU_ACTION_LCD_BL_SET,
+	MENU_ACTION_BUZZER_SET,
 };
 
 

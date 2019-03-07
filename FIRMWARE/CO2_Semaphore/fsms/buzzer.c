@@ -18,7 +18,7 @@ static					buzzer_data_t	*buzzer_params;
 
 void FSM_BUZZER_Init(void)
 {
-	FSM_state = FSM_BUZZER_STATE_IDLE;
+	FSM_state = FSM_BUZZER_STATE_WAIT_INIT;
 }
 
 void FSM_BUZZER_Process(void)
@@ -26,6 +26,13 @@ void FSM_BUZZER_Process(void)
 	uint16_t curr_period=0;
 
 	switch(FSM_state) {
+
+		case FSM_BUZZER_STATE_WAIT_INIT: {
+			if(GetBCMessage(MSG_BC_SYSTEM_STARTUP_COMPLETE)) {
+				FSM_state = FSM_BUZZER_STATE_IDLE;
+			}
+			return;
+		}
 
 		case FSM_BUZZER_STATE_PGM_PROCESSING: {
 			//
@@ -64,6 +71,15 @@ void FSM_BUZZER_Process(void)
 		}
 
 		case FSM_BUZZER_STATE_IDLE: {
+			/* Time range processing */
+			uint16_t curr_time = (rtc.hour << 8) + rtc.min;
+			uint16_t start_time = (device.settings.buzzer.from_hour << 8) + device.settings.buzzer.from_min;
+			uint16_t end_time = (device.settings.buzzer.to_hour << 8) + device.settings.buzzer.to_min;
+			if(timeinrange(curr_time, start_time, end_time)) {
+				buzzer_params->_enable = device.settings.buzzer._bytime_state;
+			} else {
+				buzzer_params->_enable = device.settings.buzzer._default_state;
+			}
 			// Waiting for processing message
 			if(buzzer_params->_enable && GetMessage(MSG_BUZZER_PROCESSING)) {
 				// Get buzzer control params
@@ -71,6 +87,9 @@ void FSM_BUZZER_Process(void)
 				// Goto PGM processing
 				FSM_state = FSM_BUZZER_STATE_PGM_PROCESSING;
 				ResetTimer(TIMER_BUZZER);
+			} else { // <- If buzzer was not enabled
+				buzzer_params->_active=0;
+				buzzer_params->pulse_count=0;
 			}
 			return;
 		}

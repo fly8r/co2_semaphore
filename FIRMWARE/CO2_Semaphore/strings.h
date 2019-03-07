@@ -35,7 +35,8 @@ extern	const	char
 		LNG_DM_MAIN[],
 		LNG_DM_SETUP_DATE[],
 		LNG_DM_SETUP_TIME[],
-		LNG_DM_SETUP_LCD_BL[];
+		LNG_DM_SETUP_LCD_BL[],
+		LNG_DM_SETUP_BUZZER[];
 
 extern	const	char
 		LNG_SMB_ANGLE_BRACKET_RIGHT[],
@@ -52,7 +53,9 @@ extern	const	char
 		LNG_FAIL[],
 		LNG_OK[],
 		LNG_YES[],
-		LNG_NO[];
+		LNG_NO[],
+		LNG_ON[],
+		LNG_OFF[];
 
 extern	const	char
 		LNG_MENU_ITEM_SETTINGS[],

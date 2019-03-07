@@ -201,7 +201,7 @@ void FSM_LCD_Process(void)
 
 					// Draw date data
 					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.day, buff, 0, 2), 0, PCF8574_COLS-5);
-					//FSM_PCF8574_AddStringFromFlash(LNG_SMB_POINT, 0, PCF8574_COLS-3);
+					FSM_PCF8574_AddStringFromFlash(LNG_SMB_POINT, 0, PCF8574_COLS-3);
 					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.month, buff, 0, 2), 0, PCF8574_COLS-2);
 					FSM_PCF8574_AddStringFromFlash((char *)LNG_DOW[rtc.dow], 1, PCF8574_COLS-4);
 					// Draw T data
@@ -442,6 +442,88 @@ void FSM_LCD_Process(void)
 							break;
 						}
 					}
+					break;
+				}
+
+				case DEVICE_MODE_BUZZER_SET: {
+					if(device.flags._idx_changed) { // <- Index was changed - full refresh
+						// Flush idx changed flag
+						device.flags._idx_changed=0;
+						// Prepare display static data
+						//     Default           On
+						//     By time          Off
+						//     Range    14.00-15.00
+						//     Save?         Yes No
+						FSM_PCF8574_Clear();
+						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_BUZZER, 0, 0);
+						FSM_PCF8574_AddStringFromFlash(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
+						FSM_PCF8574_AddStringFromFlash(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
+					}
+
+					// Draw default buzzer state
+					if(device.settings.buzzer._default_state) {
+						FSM_PCF8574_AddStringFromFlash(LNG_ON, 0, PCF8574_COLS-3);
+					} else {
+						FSM_PCF8574_AddStringFromFlash(LNG_OFF, 0, PCF8574_COLS-3);
+					}
+					// Draw by time buzzer state
+					if(device.settings.buzzer._bytime_state) {
+						FSM_PCF8574_AddStringFromFlash(LNG_ON, 1, PCF8574_COLS-3);
+					} else {
+						FSM_PCF8574_AddStringFromFlash(LNG_OFF, 1, PCF8574_COLS-3);
+					}
+					// Draw time range
+					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.buzzer.from_hour, buff, 1, 2), 2, PCF8574_COLS-11);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.buzzer.from_min, buff, 0, 2), 2, PCF8574_COLS-8);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.buzzer.to_hour, buff, 1, 2), 2, PCF8574_COLS-5);
+					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.buzzer.to_min, buff, 0, 2), 2, PCF8574_COLS-2);
+
+					// Draw cursor position
+					switch(device.idx_curr) {
+
+						case 1: {
+							FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, 1, PCF8574_COLS-4);
+							break;
+						}
+
+						case 2: {
+							FSM_PCF8574_AddByteToQueue(PCF8574_CMD_DISPLAY_MODE | PCF8574_OPT_DISPLAY_ENABLE | PCF8574_OPT_CURSOR_VISIBLE, PCF8574_COMMAND, PCF8574_BYTE_FULL, 0);
+							FSM_PCF8574_GoToXY(2, PCF8574_COLS-10);
+							break;
+						}
+
+						case 3: {
+							FSM_PCF8574_GoToXY(2, PCF8574_COLS-7);
+							break;
+						}
+
+						case 4: {
+							FSM_PCF8574_GoToXY(2, PCF8574_COLS-4);
+							break;
+						}
+
+						case 5: {
+							FSM_PCF8574_GoToXY(2, PCF8574_COLS-1);
+							break;
+						}
+
+						case 6: {
+							FSM_PCF8574_AddByteToQueue(PCF8574_CMD_DISPLAY_MODE | PCF8574_OPT_DISPLAY_ENABLE | PCF8574_OPT_CURSOR_INVISIBLE, PCF8574_COMMAND, PCF8574_BYTE_FULL, 0);
+							FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
+							break;
+						}
+
+						case 7: {
+							FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
+							break;
+						}
+
+						default: {
+							FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, 0, PCF8574_COLS-4);
+							break;
+						}
+					}
+
 					break;
 				}
 
