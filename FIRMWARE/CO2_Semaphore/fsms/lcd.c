@@ -31,7 +31,6 @@ void FSM_LCD_Init(void)
 	FSM_state = FSM_LCD_STATE_LCD_INIT;
 	// Flush FSM timer
 	ResetTimer(TIMER_LCD);
-	ResetTimer(TIMER_LCD_BL);
 }
 
 void FSM_LCD_Process(void)
@@ -156,6 +155,7 @@ void FSM_LCD_Process(void)
 						// Send message for complete startup detect
 						SendMessageWOParam(MSG_CHK_SENSORS_COMPLETE);
 						FSM_state = FSM_LCD_STATE_IDLE;
+						ResetTimer(TIMER_LCD_BL);
 						return;
 					}
 				}
@@ -458,30 +458,8 @@ void FSM_LCD_Process(void)
 			return;
 		}
 
-		case FSM_LCD_STATE_BL_CTRL: {
-
-			uint16_t curr_time = (rtc.hour << 8) + rtc.min;
-			uint16_t start_time = (device.settings.lcd.from_hour << 8) + device.settings.lcd.from_min;
-			uint16_t end_time = (device.settings.lcd.to_hour << 8) + device.settings.lcd.to_min;
-
-			if(timeinrange(curr_time, start_time, end_time)) {
-				BL_CTRL_OCR = pgm_read_byte(bl_pwm_table + device.settings.lcd.bl_pwm_by_time);
-			} else {
-				BL_CTRL_OCR = pgm_read_byte(bl_pwm_table + device.settings.lcd.bl_pwm_default);
-			}
-
-			// Goto idle state
-			FSM_state = FSM_LCD_STATE_IDLE;
-			return;
-		}
-
 		/* Default work state */
 		case FSM_LCD_STATE_IDLE: {
-			if(GetTimer(TIMER_LCD_BL) >= LCD_BL_CTRL_PERIOD || GetMessage(MSG_LCD_BL_CTRL)) {
-				FSM_state = FSM_LCD_STATE_BL_CTRL;
-				ResetTimer(TIMER_LCD_BL);
-			}
-
 			if(GetTimer(TIMER_LCD) >= LCD_REFRESH_PERIOD || GetMessage(MSG_LCD_REFRESH_DISPLAY)) {
 				// Set next FSM state
 				FSM_state = FSM_LCD_STATE_REFRESH_SCREEN;

@@ -19,6 +19,7 @@
 #include "fsms/include/uart.h"
 #include "fsms/include/pcf8574.h"
 #include "fsms/include/lcd.h"
+#include "fsms/include/lcd_bl_ctrl.h"
 #include "fsms/include/x1226.h"
 #include "fsms/include/dht.h"
 #include "fsms/include/mhz19b.h"

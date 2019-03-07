@@ -105,6 +105,8 @@ void FSM_SYSTEM_Process(void)
 								case MENU_ACTION_LCD_BL_SET: {
 									// Change device mode
 									device.mode = DEVICE_MODE_LCD_BL_SET;
+									// Set flag that in menu setup
+									device.flags._setup = 1;
 									// Set data IDX change flag for refresh screen
 									device.flags._idx_changed=1;
 									// Backup settings
@@ -184,6 +186,8 @@ void FSM_SYSTEM_Process(void)
 									// Load backup settings
 									FSM_SYSTEM_RestoreSettings();
 								}
+								// Flush setup flag
+								device.flags._setup = 0;
 								// Flush current data index
 								device.idx_curr=0;
 								// Set current device mode
@@ -320,7 +324,14 @@ void FSM_SYSTEM_Process(void)
 							} else {
 								if(--(*d) < min || *d >= max) *d = max;
 							}
+
+							if(device.idx_curr == 0 || device.idx_curr == 1) {
+								// Send message for update BL OCR reg
+								SendMessageWParam(MSG_LCD_BL_CTRL, d);
+							}
 						}
+
+
 						// Send message to refresh display
 						SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
 						break;

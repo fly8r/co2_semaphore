@@ -47,8 +47,8 @@ typedef struct
 		uint8_t to_hour, to_min;
 	} lcd;
 	struct {
-		uint8_t	from_min, from_hour;
-		uint8_t to_min, to_hour;
+		uint8_t	from_hour, from_min;
+		uint8_t to_hour, to_min;
 	} buzzer;
 	struct {
 		uint16_t lvl_normal;
@@ -66,7 +66,8 @@ typedef struct
 	enum DEVICE_CONCENTRATION_ENUM	concentration_level, last_concentration_level;
 	struct {
 		uint8_t		_menu_changed,
-					_idx_changed;
+					_idx_changed,
+					_setup;
 	} flags;
 	settings_t			settings;
 } device_data_t;

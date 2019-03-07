@@ -53,6 +53,7 @@ int main(void)
 	FSM_UART_Init();
 	FSM_PCF8574_Init();
 	FSM_LCD_Init();
+	FSM_LCDBLCTRL_Init();
 	FSM_X1226_Init();
 	FSM_MHZ19B_Init();
 	FSM_DHT_Init();
@@ -73,6 +74,7 @@ int main(void)
 		FSM_UART_Process();
 		FSM_PCF8574_Process();
 		FSM_LCD_Process();
+		FSM_LCDBLCTRL_Process();
 		FSM_X1226_Process();
 		FSM_DHT_Process();
 		FSM_MHZ19B_Process();
