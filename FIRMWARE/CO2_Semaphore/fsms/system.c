@@ -396,8 +396,8 @@ void FSM_SYSTEM_Process(void)
 							// Get data pointer for change
 							d += device.idx_curr;
 							// Get min/max value for current data pointer
-							min = pgm_read_byte(min_bl_values + device.idx_curr);
-							max = pgm_read_byte(max_bl_values + device.idx_curr);
+							min = pgm_read_byte(min_buzzer_values + device.idx_curr);
+							max = pgm_read_byte(max_buzzer_values + device.idx_curr);
 							// Rotation processing
 							if(*rotate > 0) {
 								if(++(*d) > max) *d = min;

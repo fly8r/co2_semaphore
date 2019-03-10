@@ -71,25 +71,24 @@ void FSM_BUZZER_Process(void)
 		}
 
 		case FSM_BUZZER_STATE_IDLE: {
-			/* Time range processing */
-			uint16_t curr_time = (rtc.hour << 8) + rtc.min;
-			uint16_t start_time = (device.settings.buzzer.from_hour << 8) + device.settings.buzzer.from_min;
-			uint16_t end_time = (device.settings.buzzer.to_hour << 8) + device.settings.buzzer.to_min;
-			if(timeinrange(curr_time, start_time, end_time)) {
-				buzzer_params->_enable = device.settings.buzzer._bytime_state;
-			} else {
-				buzzer_params->_enable = device.settings.buzzer._default_state;
-			}
 			// Waiting for processing message
-			if(buzzer_params->_enable && GetMessage(MSG_BUZZER_PROCESSING)) {
-				// Get buzzer control params
-				buzzer_params = GetMessageParam(MSG_BUZZER_PROCESSING);
-				// Goto PGM processing
-				FSM_state = FSM_BUZZER_STATE_PGM_PROCESSING;
-				ResetTimer(TIMER_BUZZER);
-			} else { // <- If buzzer was not enabled
-				buzzer_params->_active=0;
-				buzzer_params->pulse_count=0;
+			if(GetMessage(MSG_BUZZER_PROCESSING)) {
+				/* Time range processing */
+				uint16_t curr_time = (rtc.hour << 8) + rtc.min;
+				uint16_t start_time = (device.settings.buzzer.from_hour << 8) + device.settings.buzzer.from_min;
+				uint16_t end_time = (device.settings.buzzer.to_hour << 8) + device.settings.buzzer.to_min;
+				if(timeinrange(curr_time, start_time, end_time)) {
+					buzzer_params->_enable = device.settings.buzzer._bytime_state;
+				} else {
+					buzzer_params->_enable = device.settings.buzzer._default_state;
+				}
+				if(buzzer_params->_enable) {
+					// Get buzzer control params
+					buzzer_params = GetMessageParam(MSG_BUZZER_PROCESSING);
+					// Goto PGM processing
+					FSM_state = FSM_BUZZER_STATE_PGM_PROCESSING;
+					ResetTimer(TIMER_BUZZER);
+				}
 			}
 			return;
 		}
