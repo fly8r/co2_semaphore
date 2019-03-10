@@ -155,6 +155,9 @@
     <Compile Include="fsms\buzzer.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="fsms\charts.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="fsms\dht.c">
       <SubType>compile</SubType>
     </Compile>
@@ -165,6 +168,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="fsms\include\buzzer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="fsms\include\charts.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="fsms\include\dht.h">

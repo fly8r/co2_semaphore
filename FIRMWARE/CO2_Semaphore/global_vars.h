@@ -71,6 +71,23 @@ typedef struct
 					_idx_changed,
 					_setup;
 	} flags;
+	struct {
+		struct {
+			uint16_t by_minute[15];
+			uint16_t by_hour[15];
+			uint16_t *p_buff;
+		} co2;
+		struct {
+			uint8_t	by_minute[15];
+			uint8_t by_hour[15];
+			uint8_t *p_buff;
+		} t;
+		struct {
+			uint8_t by_minute[15];
+			uint8_t by_hour[15];
+			uint8_t *p_buff;
+		} h;
+	} charts;
 	settings_t			settings;
 } device_data_t;
 extern	device_data_t	device;
