@@ -132,13 +132,17 @@ void FSM_PCF8574_CreateCharacterFromFlash(char code, const char *pattern);
 // Set cursor to position
 void FSM_PCF8574_GoToXY(uint8_t row, uint8_t col);
 // Add string to LCD
-void FSM_PCF8574_AddString(char * str, uint8_t start_row, uint8_t start_col);
+void FSM_PCF8574_AddString(char * str);
+void FSM_PCF8574_AddStringToXY(char * str, uint8_t start_row, uint8_t start_col);
 // Add string from flash to LCD
-void FSM_PCF8574_AddStringFromFlash(const char * str, uint8_t start_row, uint8_t start_col);
+void FSM_PCF8574_AddStringFromFlash(const char * str);
+void FSM_PCF8574_AddStringFromFlashToXY(const char * str, uint8_t start_row, uint8_t start_col);
 // Add char to LCD
 void FSM_PCF8574_AddRAWChar(char chr);
+void FSM_PCF8574_AddRAWCharToXY(char chr, uint8_t row, uint8_t col);
 // Add char from flash to LCD
 void FSM_PCF8574_AddRAWCharFromFlash(const char * chr);
+void FSM_PCF8574_AddRAWCharFromFlashToXY(const char * chr, uint8_t row, uint8_t col);
 // Clear LCD display
 void FSM_PCF8574_Clear(void);
 // Flush FSM timer

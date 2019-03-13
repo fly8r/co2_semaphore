@@ -48,7 +48,7 @@
 #define I2C_PIN_SCL						5
 #define I2C_PIN_SDA						4
 // I2C Frequency settings
-#define I2C_SCL_FREQ                    300000
+#define I2C_SCL_FREQ                    250000
 #define I2C_FREQ_PRESCALER              1
 #define I2C_TWSR_VALUE                  0
 #define I2C_TWBR_VALUE                  ((F_CPU - 16*I2C_SCL_FREQ) / (2*I2C_SCL_FREQ*I2C_FREQ_PRESCALER))
@@ -64,7 +64,7 @@
 //------------------------------ Display configuration
 #define PCF8574_ROWS					4
 #define PCF8574_COLS					20
-#define PCF8574_QUEUE_SIZE				(PCF8574_COLS * PCF8574_ROWS * 2)
+#define PCF8574_QUEUE_SIZE				(PCF8574_COLS * PCF8574_ROWS * 2 + 24)
 //> IC configuration
 #define PCF8574_ADDRESS                 0x40 //0b10000000       // 0x4E is default PCF8574 device address at I2C
 #define PCF8574_BL_CTRL					0						// Use for control back light
@@ -83,7 +83,7 @@
 #define BL_CTRL_ON()					{ BL_CTRL_PORT |= BL_CTRL_MASK; }
 #define BL_CTRL_OFF()					{ BL_CTRL_PORT &= ~BL_CTRL_MASK; }
 #define BL_CTRL_OCR						OCR0B
-#define BL_CTRL_INIT()					{ TCCR0A=(1<<WGM01|1<<WGM00|1<<COM0B1); TCCR0B=(1<<CS01|1<<CS00); BL_CTRL_OCR=55; BL_CTRL_DDR|=BL_CTRL_MASK; }
+#define BL_CTRL_INIT()					{ TCCR0A=(1<<WGM01|1<<WGM00|1<<COM0B1); TCCR0B=(1<<CS01|1<<CS00); BL_CTRL_OCR=0; BL_CTRL_DDR|=BL_CTRL_MASK; }
 
 //------------------------------ RTC configuration
 #define X1226_CCR_ADDRESS				0b11011110				// CCR memory access address

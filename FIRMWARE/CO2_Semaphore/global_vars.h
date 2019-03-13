@@ -23,6 +23,12 @@
 enum DEVICE_MODES_ENUM
 {
 	DEVICE_MODE_IDLE=1,
+	DEVICE_MODE_IDLE_CHART_CO2_HOURLY,
+	DEVICE_MODE_IDLE_CHART_CO2_DAILY,
+	DEVICE_MODE_IDLE_CHART_HUMIDITY_HOURLY,
+	DEVICE_MODE_IDLE_CHART_HUMIDITY_DAILY,
+	DEVICE_MODE_IDLE_CHART_TEMPERATURE_HOURLY,
+	DEVICE_MODE_IDLE_CHART_TEMPERATURE_DAILY,
 	DEVICE_MODE_SHOW_MENU,
 	DEVICE_MODE_DATETIME_SET_DATE,
 	DEVICE_MODE_DATETIME_SET_TIME,
@@ -73,19 +79,19 @@ typedef struct
 	} flags;
 	struct {
 		struct {
+			uint16_t min, max;
 			uint16_t by_minute[15];
 			uint16_t by_hour[15];
-			uint16_t *p_buff;
 		} co2;
 		struct {
+			uint8_t min, max;
 			uint8_t	by_minute[15];
 			uint8_t by_hour[15];
-			uint8_t *p_buff;
 		} t;
 		struct {
+			uint8_t min, max;
 			uint8_t by_minute[15];
 			uint8_t by_hour[15];
-			uint8_t *p_buff;
 		} h;
 	} charts;
 	settings_t			settings;
@@ -166,6 +172,7 @@ typedef struct
 {
 	uint8_t		_presence, _error;
 	enum		MHZ19B_ERRORS_ENUM	error;
+	uint16_t	min, max;
 	uint16_t	value;
 } mhz19b_data_t;
 extern	mhz19b_data_t	mhz19b;
@@ -194,10 +201,12 @@ typedef struct
 	struct
 	{
 		uint8_t	sign, value, mantissa;
+		int8_t min, max;
 	} temperature;
 	struct
 	{
 		uint8_t	value, mantissa;
+		uint8_t min, max;
 	} humidity;
 } dht_data_t;
 extern		dht_data_t		dht;

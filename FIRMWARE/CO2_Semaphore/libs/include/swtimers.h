@@ -18,7 +18,7 @@
 #define		HOUR 				60 * MIN
 
 // Mas timers counter
-#define		MAX_TIMERS			12
+#define		MAX_TIMERS			13
 // Timers enum
 enum TIMERS_ENUM
 {
@@ -34,6 +34,7 @@ enum TIMERS_ENUM
 	TIMER_LEDS,
 	TIMER_LEDS_BLINK,
 	TIMER_BUZZER,
+	TIMER_CHARTS,
 };
 
 void		InitSystemTimer(void);

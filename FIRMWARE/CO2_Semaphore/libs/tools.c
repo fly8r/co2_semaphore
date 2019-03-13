@@ -102,7 +102,7 @@ char * utoa_cycle_sub8(uint8_t value, char *buffer, uint8_t _trim_zero, uint8_t 
 }
 
 /* Hex to BCD uint16_t */
-char * utoa_cycle_sub16(uint16_t value, char *buffer, uint8_t max_value_length)
+char * utoa_cycle_sub16(uint16_t value, char *buffer, uint8_t _trim_zero, uint8_t max_value_length)
 {
 	char *ptr = buffer;
 	for(uint8_t i=0; i<5; i++) {
@@ -119,12 +119,14 @@ char * utoa_cycle_sub16(uint16_t value, char *buffer, uint8_t max_value_length)
 	*ptr = 0;
 
 	// Replace first zero to space
-	for(uint8_t i=0;i<4; i++) {
-		if(buffer[i] == '0') {
-			buffer[i] = ' ';
-			continue;
+	if(_trim_zero) {
+		for(uint8_t i=0;i<4; i++) {
+			if(buffer[i] == '0') {
+				buffer[i] = ' ';
+				continue;
+			}
+			break;
 		}
-		break;
 	}
 	// Trim buffer length to max_value_length
 	for(uint8_t i=0; i<(5 - max_value_length); i++) {

@@ -3,7 +3,7 @@
  *
  * Created: 10.03.2019 21:32:13
  *  Author: fly8r
- */ 
+ */
 #ifndef CHARTS_H_
 #define CHARTS_H_
 
@@ -19,12 +19,15 @@
 enum FSM_CHARTS_STATES_ENUM
 {
 	FSM_CHARTS_STATE_IDLE=0,
-	
+	FSM_CHARTS_STATE_INIT,
+	FSM_CHARTS_STATE_COUNTERS_PROCESSING,
 };
 
 /************************************************************************/
 /* MACROS                                                               */
 /************************************************************************/
+#define CHART_BY_MINUTE_STORE_PERIOD		1	// minute
+#define CHART_BY_HOUR_STORE_PERIOD			60	// minute
 
 /************************************************************************/
 /* External VARS                                                        */

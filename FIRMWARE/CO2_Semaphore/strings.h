@@ -12,14 +12,14 @@
 
 
 extern	const	char
-		icon_temp[8],
-		icon_degree[8],
-		icon_humidity[8],
-		icon_underscore[8],
-		icon_arrow_up[8],
-		icon_arrow_down[8],
-		icon_arrow_right[8],
-		icon_colon[8];
+		level0[8],
+		level1[8],
+		level2[8],
+		level3[8],
+		level4[8],
+		level5[8],
+		level6[8],
+		level7[8];
 
 extern	const	char
 		LNG_SPLASH_LOGO_S1[],
@@ -33,6 +33,12 @@ extern  const	char
 extern	const	char
 		LNG_DM_SCHK[],
 		LNG_DM_MAIN[],
+		LNG_DM_CHART_CO2_HOURLY[],
+		LNG_DM_CHART_CO2_DAILY[],
+		LNG_DM_CHART_H_HOURLY[],
+		LNG_DM_CHART_H_DAILY[],
+		LNG_DM_CHART_T_HOURLY[],
+		LNG_DM_CHART_T_DAILY[],
 		LNG_DM_SETUP_DATE[],
 		LNG_DM_SETUP_TIME[],
 		LNG_DM_SETUP_LCD_BL[],

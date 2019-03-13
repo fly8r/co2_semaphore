@@ -24,6 +24,7 @@ void FSM_DHT_Init(void)
 	// Initialize error var
 	dht._failed = 0;
 	dht.error = DHT_ERROR_NO_ERROR;
+	dht.temperature.min = -100;
 	// Set next FSM state
 	FSM_state = FSM_DHT_STATE_IDLE;
 	// Flush FSM timer
@@ -57,7 +58,7 @@ void FSM_DHT_Process(void)
 				ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 					// Set port to INPUT
 					DHT_DDR &= ~DHT_PIN_MASK;
-					
+
 					if(!FSM_DHT_ExpectHighToLowLevel()) {
 						// Set error handler
 						dht._failed = 1;
@@ -68,7 +69,7 @@ void FSM_DHT_Process(void)
 						FSM_state = FSM_DHT_STATE_IDLE;
 						return;
 					}
-					
+
 					if(!FSM_DHT_ExpectLowToHighLevel()) {
 						// Set error handler
 						dht._error = 1;
@@ -77,7 +78,7 @@ void FSM_DHT_Process(void)
 						FSM_state = FSM_DHT_STATE_IDLE;
 						return;
 					}
-					
+
 					if(!FSM_DHT_ExpectHighToLowLevel()) {
 						// Set error handler
 						dht._error = 1;
@@ -86,7 +87,7 @@ void FSM_DHT_Process(void)
 						FSM_state = FSM_DHT_STATE_IDLE;
 						return;
 					}
-					
+
 
 					// Receiving 5 bytes from DHT
 					//uint8_t		*p_buff = (void *)&dht.data;
@@ -94,7 +95,7 @@ void FSM_DHT_Process(void)
 						// Receiving procedure bit by bit
 						uint8_t	tmp=0;
 						for(uint8_t j=0; j<8; j++) {
-							
+
 							if(!FSM_DHT_ExpectLowToHighLevel()) {
 								// Set error handler
 								dht._error = 1;
@@ -103,7 +104,7 @@ void FSM_DHT_Process(void)
 								FSM_state = FSM_DHT_STATE_IDLE;
 								return;
 							}
-							
+
 							uint8_t t = FSM_DHT_ExpectHighToLowLevel();
 							if(!t) {
 								// Set error handler
@@ -113,7 +114,7 @@ void FSM_DHT_Process(void)
 								FSM_state = FSM_DHT_STATE_IDLE;
 								return;
 							}
-							
+
 							// Shift data bit in receive byte
 							tmp <<= 1;
 							// If slot has time over 50uS - is 1, else - 0
@@ -127,7 +128,7 @@ void FSM_DHT_Process(void)
 				}
 				// Check CRC
 				if(rx_buff[4] == ((rx_buff[0] + rx_buff[1] + rx_buff[2] + rx_buff[3]) & 0xFF)) {
-					FSM_state = FSM_DHT_STATE_PROCESSING;	
+					FSM_state = FSM_DHT_STATE_PROCESSING;
 				} else {
 					// Set error handler
 					dht._error = 1;
@@ -141,21 +142,43 @@ void FSM_DHT_Process(void)
 		case FSM_DHT_STATE_PROCESSING: {
 
 			ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-				
-				dht.data.h = ((rx_buff[0] << 8) | rx_buff[1]); 
+
+				dht.data.h = ((rx_buff[0] << 8) | rx_buff[1]);
 				dht.data.t = ((rx_buff[2] << 8) | rx_buff[3]);
-				dht.data.crc = rx_buff[4]; 
-				
+				dht.data.crc = rx_buff[4];
+
 				// Calculating DHT data values
 				dht.temperature.sign = 0;
 				if(dht.data.t & 0x8000) {
 					dht.data.t &= 0x7FFF;
 					dht.temperature.sign = 1;
 				}
+
+				/* Temperature value */
 				dht.temperature.value = dht.data.t / 10;
 				dht.temperature.mantissa = dht.data.t % 10;
+				// Store min temperature value
+				int8_t signed_value = 0;
+				if(dht.temperature.sign) {
+					signed_value = -dht.temperature.value;
+				} else {
+					signed_value = dht.temperature.value;
+				}
+				if(dht.temperature.min == -100 || dht.temperature.min < signed_value) {
+					dht.temperature.min = signed_value;
+				}
+				// Store max temperatire value
+				if(dht.temperature.max > signed_value) {
+					dht.temperature.max = signed_value;
+				}
+
+				/* Humidity value */
 				dht.humidity.value = dht.data.h / 10;
 				dht.humidity.mantissa = dht.data.h % 10;
+				// Store min humidity value
+				if(!dht.humidity.min || dht.humidity.min < dht.humidity.value) { dht.humidity.min = dht.humidity.value; }
+				// Store max humidity value
+				if(dht.humidity.max > dht.humidity.value) { dht.humidity.max = dht.humidity.value; }
 			}
 			// Set next FSM state
 			FSM_state = FSM_DHT_STATE_IDLE;

@@ -113,6 +113,11 @@ void FSM_MHZ19B_Process(void)
 			}
 			// Get sensor value
 			mhz19b.value = ((buff[2]<<8) + buff[3]);
+			// Store min value
+			if(!mhz19b.min || mhz19b.min > mhz19b.value) { mhz19b.min = mhz19b.value; }
+			// Store max value
+			if(mhz19b.max < mhz19b.value) { mhz19b.max = mhz19b.value; }
+			// Goto default state
 			FSM_state = FSM_MHZ19B_STATE_IDLE;
 			return;
 		}

@@ -22,10 +22,14 @@ void FSM_PCF8574_AddByteToQueue(uint8_t byte, uint8_t type, uint8_t f_half, cons
 void FSM_PCF8574_CreateCharacter(char code, char *pattern);
 void FSM_PCF8574_CreateCharacterFromFlash(char code, const char *pattern);
 void FSM_PCF8574_GoToXY(uint8_t row, uint8_t col);
-void FSM_PCF8574_AddString(char * str, uint8_t start_row, uint8_t start_col);
-void FSM_PCF8574_AddStringFromFlash(const char * str, uint8_t start_row, uint8_t start_col);
+void FSM_PCF8574_AddString(char * str);
+void FSM_PCF8574_AddStringToXY(char * str, uint8_t start_row, uint8_t start_col);
+void FSM_PCF8574_AddStringFromFlash(const char * str);
+void FSM_PCF8574_AddStringFromFlashToXY(const char * str, uint8_t start_row, uint8_t start_col);
 void FSM_PCF8574_AddRAWChar(char chr);
+void FSM_PCF8574_AddRAWCharToXY(char chr, uint8_t row, uint8_t col);
 void FSM_PCF8574_AddRAWCharFromFlash(const char * chr);
+void FSM_PCF8574_AddRAWCharFromFlashToXY(const char * chr, uint8_t row, uint8_t col);
 void FSM_PCF8574_Clear(void);
 void FSM_PCF8574_FlushTimer(void);
 
@@ -236,13 +240,9 @@ void FSM_PCF8574_GoToXY(uint8_t row, uint8_t col)
 }
 
 /* Add string to LCD */
-void FSM_PCF8574_AddString(char * str, uint8_t start_row, uint8_t start_col)
+void FSM_PCF8574_AddString(char * str)
 {
 	char chr;
-
-	// Goto Row, Col position
-	FSM_PCF8574_GoToXY(start_row, start_col);
-
 	while ((chr = *str)) {
 		switch(chr) {
 			// Goto new line
@@ -274,13 +274,17 @@ void FSM_PCF8574_AddString(char * str, uint8_t start_row, uint8_t start_col)
 	}
 }
 
-/* Add string from flash to LCD */
-void FSM_PCF8574_AddStringFromFlash(const char * str, uint8_t start_row, uint8_t start_col)
+void FSM_PCF8574_AddStringToXY(char * str, uint8_t start_row, uint8_t start_col)
 {
-	char chr;
-
 	// Goto Row, Col position
 	FSM_PCF8574_GoToXY(start_row, start_col);
+	FSM_PCF8574_AddString(str);
+}
+
+/* Add string from flash to LCD */
+void FSM_PCF8574_AddStringFromFlash(const char * str)
+{
+	char chr;
 	// Draw string
 	while ((chr = pgm_read_byte(str))) {
 		switch(chr) {
@@ -313,9 +317,22 @@ void FSM_PCF8574_AddStringFromFlash(const char * str, uint8_t start_row, uint8_t
 	}
 }
 
+void FSM_PCF8574_AddStringFromFlashToXY(const char * str, uint8_t start_row, uint8_t start_col)
+{
+	// Goto Row, Col position
+	FSM_PCF8574_GoToXY(start_row, start_col);
+	FSM_PCF8574_AddStringFromFlash(str);
+}
+
 /* Add char to LCD */
 void FSM_PCF8574_AddRAWChar(char chr)
 {
+	FSM_PCF8574_AddByteToQueue(chr, PCF8574_DATA, PCF8574_BYTE_FULL, 0);
+}
+
+void FSM_PCF8574_AddRAWCharToXY(char chr, uint8_t row, uint8_t col)
+{
+	FSM_PCF8574_GoToXY(row, col);
 	FSM_PCF8574_AddByteToQueue(chr, PCF8574_DATA, PCF8574_BYTE_FULL, 0);
 }
 
@@ -323,6 +340,13 @@ void FSM_PCF8574_AddRAWChar(char chr)
 void FSM_PCF8574_AddRAWCharFromFlash(const char *chr)
 {
 	char c = pgm_read_byte(*chr);
+	FSM_PCF8574_AddRAWChar(c);
+}
+
+void FSM_PCF8574_AddRAWCharFromFlashToXY(const char *chr, uint8_t row, uint8_t col)
+{
+	char c = pgm_read_byte(*chr);
+	FSM_PCF8574_GoToXY(row, col);
 	FSM_PCF8574_AddRAWChar(c);
 }
 

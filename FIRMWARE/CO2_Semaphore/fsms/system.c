@@ -76,6 +76,49 @@ void FSM_SYSTEM_Process(void)
 					// Processing key press action by device modes
 					switch(device.mode) {
 
+						// IDLE mode processing
+						case DEVICE_MODE_IDLE: {
+							device.mode = DEVICE_MODE_IDLE_CHART_CO2_HOURLY;
+							SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+							return;
+						}
+						// Chart CO2 mode processing
+						case DEVICE_MODE_IDLE_CHART_CO2_HOURLY: {
+							device.mode = DEVICE_MODE_IDLE_CHART_CO2_DAILY;
+							SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+							return;
+						}
+						// Chart CO2 mode processing
+						case DEVICE_MODE_IDLE_CHART_CO2_DAILY: {
+							device.mode = DEVICE_MODE_IDLE_CHART_HUMIDITY_HOURLY;
+							SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+							return;
+						}
+						// Chart Humidity hourly mode processing
+						case DEVICE_MODE_IDLE_CHART_HUMIDITY_HOURLY: {
+							device.mode = DEVICE_MODE_IDLE_CHART_HUMIDITY_DAILY;
+							SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+							return;
+						}
+						// Chart Humidity daily mode processing
+						case DEVICE_MODE_IDLE_CHART_HUMIDITY_DAILY: {
+							device.mode = DEVICE_MODE_IDLE_CHART_TEMPERATURE_HOURLY;
+							SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+							return;
+						}
+						// Chart Temperature hourly mode processing
+						case DEVICE_MODE_IDLE_CHART_TEMPERATURE_HOURLY: {
+							device.mode = DEVICE_MODE_IDLE_CHART_TEMPERATURE_DAILY;
+							SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+							return;
+						}
+						// Chart Temperature daily mode processing
+						case DEVICE_MODE_IDLE_CHART_TEMPERATURE_DAILY: {
+							device.mode = DEVICE_MODE_IDLE;
+							SendMessageWOParam(MSG_LCD_REFRESH_DISPLAY);
+							return;
+						}
+						// Show menu mode processing
 						case DEVICE_MODE_SHOW_MENU: {
 							switch(MENU_SELECT) {
 								case MENU_ACTION_CANCEL: { // <- EXIT menu action

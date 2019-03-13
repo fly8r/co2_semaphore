@@ -17,7 +17,7 @@ uint8_t crc8(uint8_t crc, uint8_t data);
 char * hex_to_ascii(uint8_t number, char * buffer);
 char * hex_to_ascii16(uint16_t number, char * buffer);
 char * utoa_cycle_sub8(uint8_t value, char *buffer, uint8_t _trim_zero, uint8_t max_value_length);
-char * utoa_cycle_sub16(uint16_t value, char *buffer, uint8_t max_value_length);
+char * utoa_cycle_sub16(uint16_t value, char *buffer, uint8_t _trim_zero, uint8_t max_value_length);
 uint8_t bcd2dec(uint8_t val);
 uint8_t dec2bcd(uint8_t val);
 int8_t matchtime(uint16_t time1, uint16_t time2);

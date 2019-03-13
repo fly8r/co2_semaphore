@@ -14,6 +14,7 @@ static					uint8_t			splash_length = PCF8574_COLS;
 static					uint8_t			current_row=0;
 static					uint8_t			_colon_blink=0;
 static					menu_item_t		*last_menu_item;
+const					uint8_t			chart_table[]		PROGMEM = { 0x20, 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7 };
 
 /************************************************************************/
 /* FUNCTIONS                                                            */
@@ -24,6 +25,10 @@ uint8_t FSM_LCD_DrawCustomChar(char chr, uint8_t start_row, uint8_t start_col);
 uint8_t FSM_LCD_AddCustomCharStringToXY(char * str, uint8_t start_row, uint8_t start_col);
 uint8_t FSM_LCD_AddCustomCharStringToXYFromFlash(const char * str, uint8_t start_row, uint8_t start_col);
 #endif
+void FSM_LCD_CreateChartsChar(void);
+void FSM_LCD_DrawChart(uint8_t *data, uint8_t length, uint8_t hysteresis, uint8_t absolute_max, uint8_t start_row, uint8_t start_col, uint8_t direction);
+void FSM_LCD_DrawChart16(uint16_t *data, uint8_t length, uint8_t hysteresis, uint16_t absolute_max, uint8_t start_row, uint8_t start_col, uint8_t direction);
+void FSM_LCD_DrawChartVerticalLine(uint8_t value, uint8_t start_row, uint8_t col);
 
 void FSM_LCD_Init(void)
 {
@@ -58,10 +63,10 @@ void FSM_LCD_Process(void)
 			//   ### ###
 			//  SEMAPHORE
 			FSM_LCD_AddCustomCharStringToXYFromFlash(LNG_SPLASH_LOGO_S1, 0, 3);
-			FSM_PCF8574_AddStringFromFlash(LNG_SPLASH_LOGO_S1_1, 0, 9);
-			FSM_PCF8574_AddStringFromFlash(LNG_SPLASH_LOGO_S4, 3, 2);
-			FSM_PCF8574_AddStringFromFlash(LNG_HW_VERSION, 0, 13);
-			FSM_PCF8574_AddStringFromFlash(LNG_SW_VERSION, 1, 13);
+			FSM_PCF8574_AddStringFromFlashToXY(LNG_SPLASH_LOGO_S1_1, 0, 9);
+			FSM_PCF8574_AddStringFromFlashToXY(LNG_SPLASH_LOGO_S4, 3, 2);
+			FSM_PCF8574_AddStringFromFlashToXY(LNG_HW_VERSION, 0, 13);
+			FSM_PCF8574_AddStringFromFlashToXY(LNG_SW_VERSION, 1, 13);
 			// Prepare SPLASH show timeout countdown
 			ResetTimer(TIMER_LCD);
 			// Goto waiting SHOW timeout
@@ -108,7 +113,7 @@ void FSM_LCD_Process(void)
 			//  -> RTC ...
 			//  -> DHT ...
 			//  -> CO2 ...
-			FSM_PCF8574_AddStringFromFlash(LNG_DM_SCHK, 0, 0);
+			FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_SCHK, 0, 0);
 			// Goto sensors test result
 			FSM_state = FSM_LCD_STATE_ANIMATION_SENSORS_STATE_SCREEN;
 			// Flush FSM timer for process animation
@@ -161,9 +166,9 @@ void FSM_LCD_Process(void)
 				}
 				/* Draw state */
 				if(_presence) {
-					FSM_PCF8574_AddStringFromFlash(LNG_OK, current_row, PCF8574_COLS-2);
+					FSM_PCF8574_AddStringFromFlashToXY(LNG_OK, current_row, PCF8574_COLS-2);
 				} else {
-					FSM_PCF8574_AddStringFromFlash(LNG_FAIL, current_row, PCF8574_COLS-4);
+					FSM_PCF8574_AddStringFromFlashToXY(LNG_FAIL, current_row, PCF8574_COLS-4);
 				}
 
 				// Flush FSM timer for process animations
@@ -185,8 +190,10 @@ void FSM_LCD_Process(void)
 					if(_full_refresh) {
 						// Clear display
 						FSM_PCF8574_Clear();
+						// Upload custom characters into LCD
+						FSM_LCD_CreateCustomChars();
 						// Load first line of splash string to display
-						FSM_PCF8574_AddStringFromFlash(LNG_DM_MAIN, 0, PCF8574_COLS-3);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_MAIN, 0, PCF8574_COLS-3);
 					}
 
 					// Draw big clock data
@@ -194,34 +201,116 @@ void FSM_LCD_Process(void)
 					FSM_LCD_AddCustomCharStringToXY(utoa_cycle_sub8(rtc.min, buff, 0, 2), 0, ++pos);
 					// Draw blinking colon
 					if((_colon_blink ^= 0x1)) {
-						FSM_PCF8574_AddStringFromFlash(LNG_SMB_COLON, 1, 6);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_COLON, 1, 6);
 					} else {
-						FSM_PCF8574_AddStringFromFlash(LNG_SMB_SPACE, 1, 6);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_SPACE, 1, 6);
 					}
 
 					// Draw date data
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.day, buff, 0, 2), 0, PCF8574_COLS-5);
-					FSM_PCF8574_AddStringFromFlash(LNG_SMB_POINT, 0, PCF8574_COLS-3);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.month, buff, 0, 2), 0, PCF8574_COLS-2);
-					FSM_PCF8574_AddStringFromFlash((char *)LNG_DOW[rtc.dow], 1, PCF8574_COLS-4);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(rtc.day, buff, 0, 2), 0, PCF8574_COLS-5);
+					//FSM_PCF8574_AddStringFromFlash(LNG_SMB_POINT, 0, PCF8574_COLS-3);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(rtc.month, buff, 0, 2), 0, PCF8574_COLS-2);
+					FSM_PCF8574_AddStringFromFlashToXY((char *)LNG_DOW[rtc.dow], 1, PCF8574_COLS-4);
 					// Draw T data
 					if(dht.temperature.sign) {
-						FSM_PCF8574_AddStringFromFlash(LNG_SMB_MINUS, 3, 0);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_MINUS, 3, 0);
 					} else {
-						FSM_PCF8574_AddStringFromFlash(LNG_SMB_SPACE, 3, 0);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_SPACE, 3, 0);
 					}
-					FSM_PCF8574_AddString(utoa_cycle_sub8(dht.temperature.value, buff, 1, 2), 3, 1);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(dht.temperature.value, buff, 1, 2), 3, 1);
 					// Draw H data
-					FSM_PCF8574_AddString(utoa_cycle_sub8(dht.humidity.value, buff, 1, 2), 3, 7);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(dht.humidity.value, buff, 1, 2), 3, 7);
 					// Draw CO2 data
-					FSM_PCF8574_AddString(utoa_cycle_sub16(mhz19b.value, buff, 4), 3, 13);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub16(mhz19b.value, buff, 1, 4), 3, 13);
 					if(mhz19b._error) {
-						FSM_PCF8574_AddStringFromFlash(PSTR("!"), 3, 12);
+						FSM_PCF8574_AddStringFromFlashToXY(PSTR("!"), 3, 12);
 					} else {
-						FSM_PCF8574_AddStringFromFlash(LNG_SMB_SPACE, 3, 12);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_SPACE, 3, 12);
 					}
 
 					// /@TODO: Need optimization
+					break;
+				}
+
+				case DEVICE_MODE_IDLE_CHART_CO2_HOURLY: {
+					// If mode was changed - full refresh LCD screen
+					if(_full_refresh) {
+						// Clear display
+						FSM_PCF8574_Clear();
+						// Upload charts char into LCD
+						FSM_LCD_CreateChartsChar();
+						// Load first line of splash string to display
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_CHART_CO2_HOURLY, 0, 0);
+						// Drawing chart procedure
+						FSM_LCD_DrawChart16((void *)&device.charts.co2.by_minute, 15, 200, 5000, 3, 0, 0);
+					}
+					break;
+				}
+				
+				case DEVICE_MODE_IDLE_CHART_CO2_DAILY: {
+					// If mode was changed - full refresh LCD screen
+					if(_full_refresh) {
+						// Clear display
+						FSM_PCF8574_Clear();
+						// Upload charts char into LCD
+						FSM_LCD_CreateChartsChar();
+						// Load first line of splash string to display
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_CHART_CO2_HOURLY, 0, 0);
+						// Drawing chart procedure
+						FSM_LCD_DrawChart16((void *)&device.charts.co2.by_hour, 15, 200, 5000, 3, 0, 0);
+					}
+					break;
+				}
+
+				case DEVICE_MODE_IDLE_CHART_HUMIDITY_HOURLY: {
+					// If mode was changed - full refresh LCD screen
+					if(_full_refresh) {
+						// Clear display
+						FSM_PCF8574_Clear();
+						// Load first line of splash string to display
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_CHART_H_HOURLY, 0, 0);
+						// Drawing chart procedure
+						FSM_LCD_DrawChart((void *)&device.charts.h.by_minute, 15, 10, 99, 3, 0, 0);
+					}
+					break;
+				}
+
+				case DEVICE_MODE_IDLE_CHART_HUMIDITY_DAILY: {
+					// If mode was changed - full refresh LCD screen
+					if(_full_refresh) {
+						// Clear display
+						FSM_PCF8574_Clear();
+						// Load first line of splash string to display
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_CHART_H_DAILY, 0, 0);
+						// Drawing chart procedure
+						FSM_LCD_DrawChart((void *)&device.charts.h.by_hour, 15, 10, 99, 3, 0, 0);
+					}
+					break;
+				}
+
+				case DEVICE_MODE_IDLE_CHART_TEMPERATURE_HOURLY: {
+					// If mode was changed - full refresh LCD screen
+					if(_full_refresh) {
+						// Clear display
+						FSM_PCF8574_Clear();
+						// Load first line of splash string to display
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_CHART_T_HOURLY, 0, 0);
+						// Drawing chart procedure
+						FSM_LCD_DrawChart((void *)&device.charts.t.by_minute, 15, 10, 50, 3, 0, 0);
+					}
+					break;
+				}
+				
+				case DEVICE_MODE_IDLE_CHART_TEMPERATURE_DAILY: {
+					// If mode was changed - full refresh LCD screen
+					if(_full_refresh) {
+						// Clear display
+						FSM_PCF8574_Clear();
+						// Load first line of splash string to display
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_CHART_T_DAILY, 0, 0);
+						// Drawing chart procedure
+						FSM_LCD_DrawChart((void *)&device.charts.t.by_hour, 15, 10, 50, 3, 0, 0);
+					}
 					break;
 				}
 
@@ -246,15 +335,15 @@ void FSM_LCD_Process(void)
 						for(uint8_t i=0; i < PCF8574_ROWS; i++) {
 							// Draw cursor
 							if(device.menu_cursor == i) {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, i, 0);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_ANGLE_BRACKET_RIGHT, i, 0);
 							} else {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_SPACE, i, 0);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_SPACE, i, 0);
 							}
 							// Draw menu item title
 							uint8_t shift = i-device.menu_cursor;
-							FSM_PCF8574_AddStringFromFlash(MENU_GetMenuTextByShift(shift), i, 1);
+							FSM_PCF8574_AddStringFromFlashToXY(MENU_GetMenuTextByShift(shift), i, 1);
 							// Draw subcategory symbol
-							FSM_PCF8574_AddStringFromFlash(MENU_GetChildMenuSymbolByShift(shift), i, PCF8574_COLS-2);
+							FSM_PCF8574_AddStringFromFlashToXY(MENU_GetChildMenuSymbolByShift(shift), i, PCF8574_COLS-2);
 						}
 						// Store last menu item pointer
 						last_menu_item = selected_menu_item;
@@ -272,51 +361,51 @@ void FSM_LCD_Process(void)
 						//	   Fri 01/01/00
 						//     Save?         Yes No
 						FSM_PCF8574_Clear();
-						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_DATE, 0, 0);
-						FSM_PCF8574_AddStringFromFlash(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
-						FSM_PCF8574_AddStringFromFlash(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_SETUP_DATE, 0, 0);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
 
 						// Draw cursor position
 						switch(device.idx_curr) {
 
 							case 1: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 4);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_DBL_UNDERSCORE, 1, 4);
 								break;
 							}
 
 							case 2: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 7);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_DBL_UNDERSCORE, 1, 7);
 								break;
 							}
 
 							case 3: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 10);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_DBL_UNDERSCORE, 1, 10);
 								break;
 							}
 
 							case 4: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
 								break;
 							}
 
 							case 5: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
 								break;
 							}
 
 							default: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 1);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_DBL_UNDERSCORE, 1, 1);
 								break;
 							}
 						}
 					}
 					// Draw DATE data
-					FSM_PCF8574_AddStringFromFlash((char *)LNG_DOW[rtc.dow], 2, 0);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.day, buff, 0, 2), 2, 4);
-					FSM_PCF8574_AddStringFromFlash(LNG_SMB_SLASH, 2, 6);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.month, buff, 0, 2), 2, 7);
-					FSM_PCF8574_AddStringFromFlash(LNG_SMB_SLASH, 2, 9);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.year, buff, 0, 2), 2, 10);
+					FSM_PCF8574_AddStringFromFlashToXY((char *)LNG_DOW[rtc.dow], 2, 0);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(rtc.day, buff, 0, 2), 2, 4);
+					FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_SLASH, 2, 6);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(rtc.month, buff, 0, 2), 2, 7);
+					FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_SLASH, 2, 9);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(rtc.year, buff, 0, 2), 2, 10);
 					break;
 				}
 
@@ -330,45 +419,45 @@ void FSM_LCD_Process(void)
 						//	   00:00:00
 						//     Save?         Yes No
 						FSM_PCF8574_Clear();
-						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_TIME, 0, 0);
-						FSM_PCF8574_AddStringFromFlash(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
-						FSM_PCF8574_AddStringFromFlash(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_SETUP_TIME, 0, 0);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
 
 						// Draw cursor position
 						switch(device.idx_curr) {
 
 							case 1: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 3);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_DBL_UNDERSCORE, 1, 3);
 								break;
 							}
 
 							case 2: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 6);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_DBL_UNDERSCORE, 1, 6);
 								break;
 							}
 
 							case 3: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
 								break;
 							}
 
 							case 4: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
 								break;
 							}
 
 							default: {
-								FSM_PCF8574_AddStringFromFlash(LNG_SMB_DBL_UNDERSCORE, 1, 0);
+								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_DBL_UNDERSCORE, 1, 0);
 								break;
 							}
 						}
 					}
 					// Draw TIME data
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.hour, buff, 0, 2), 2, 0);
-					FSM_PCF8574_AddStringFromFlash(LNG_SMB_COLON, 2, 2);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.min, buff, 0, 2), 2, 3);
-					FSM_PCF8574_AddStringFromFlash(LNG_SMB_COLON, 2, 5);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(rtc.sec, buff, 0, 2), 2, 6);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(rtc.hour, buff, 0, 2), 2, 0);
+					FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_COLON, 2, 2);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(rtc.min, buff, 0, 2), 2, 3);
+					FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_COLON, 2, 5);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(rtc.sec, buff, 0, 2), 2, 6);
 					break;
 				}
 
@@ -382,20 +471,20 @@ void FSM_LCD_Process(void)
 						//     Range    14.00-15.00
 						//     Save?         Yes No
 						FSM_PCF8574_Clear();
-						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_LCD_BL, 0, 0);
-						FSM_PCF8574_AddStringFromFlash(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
-						FSM_PCF8574_AddStringFromFlash(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_SETUP_LCD_BL, 0, 0);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
 					}
 
 					// Draw default bl pwm level
-					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.bl_pwm_default, buff, 1, 2), 0, PCF8574_COLS-2);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(device.settings.lcd.bl_pwm_default, buff, 1, 2), 0, PCF8574_COLS-2);
 					// Draw bl pwm level by time range
-					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.bl_pwm_by_time, buff, 1, 2), 1, PCF8574_COLS-2);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(device.settings.lcd.bl_pwm_by_time, buff, 1, 2), 1, PCF8574_COLS-2);
 					// Draw time range
-					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.from_hour, buff, 1, 2), 2, PCF8574_COLS-11);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.from_min, buff, 0, 2), 2, PCF8574_COLS-8);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.to_hour, buff, 1, 2), 2, PCF8574_COLS-5);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.lcd.to_min, buff, 0, 2), 2, PCF8574_COLS-2);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(device.settings.lcd.from_hour, buff, 1, 2), 2, PCF8574_COLS-11);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(device.settings.lcd.from_min, buff, 0, 2), 2, PCF8574_COLS-8);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(device.settings.lcd.to_hour, buff, 1, 2), 2, PCF8574_COLS-5);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(device.settings.lcd.to_min, buff, 0, 2), 2, PCF8574_COLS-2);
 
 					// Draw cursor position
 					switch(device.idx_curr) {
@@ -427,12 +516,12 @@ void FSM_LCD_Process(void)
 
 						case 6: {
 							FSM_PCF8574_AddByteToQueue(PCF8574_CMD_DISPLAY_MODE | PCF8574_OPT_DISPLAY_ENABLE | PCF8574_OPT_CURSOR_INVISIBLE, PCF8574_COMMAND, PCF8574_BYTE_FULL, 0);
-							FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
+							FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
 							break;
 						}
 
 						case 7: {
-							FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
+							FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
 							break;
 						}
 
@@ -455,34 +544,34 @@ void FSM_LCD_Process(void)
 						//     Range    14.00-15.00
 						//     Save?         Yes No
 						FSM_PCF8574_Clear();
-						FSM_PCF8574_AddStringFromFlash(LNG_DM_SETUP_BUZZER, 0, 0);
-						FSM_PCF8574_AddStringFromFlash(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
-						FSM_PCF8574_AddStringFromFlash(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_SETUP_BUZZER, 0, 0);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_YES, PCF8574_ROWS-1, PCF8574_COLS-6);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_NO, PCF8574_ROWS-1, PCF8574_COLS-2);
 					}
 
 					// Draw default buzzer state
 					if(device.settings.buzzer._default_state) {
-						FSM_PCF8574_AddStringFromFlash(LNG_ON, 0, PCF8574_COLS-3);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_ON, 0, PCF8574_COLS-3);
 					} else {
-						FSM_PCF8574_AddStringFromFlash(LNG_OFF, 0, PCF8574_COLS-3);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_OFF, 0, PCF8574_COLS-3);
 					}
 					// Draw by time buzzer state
 					if(device.settings.buzzer._bytime_state) {
-						FSM_PCF8574_AddStringFromFlash(LNG_ON, 1, PCF8574_COLS-3);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_ON, 1, PCF8574_COLS-3);
 					} else {
-						FSM_PCF8574_AddStringFromFlash(LNG_OFF, 1, PCF8574_COLS-3);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_OFF, 1, PCF8574_COLS-3);
 					}
 					// Draw time range
-					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.buzzer.from_hour, buff, 1, 2), 2, PCF8574_COLS-11);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.buzzer.from_min, buff, 0, 2), 2, PCF8574_COLS-8);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.buzzer.to_hour, buff, 1, 2), 2, PCF8574_COLS-5);
-					FSM_PCF8574_AddString(utoa_cycle_sub8(device.settings.buzzer.to_min, buff, 0, 2), 2, PCF8574_COLS-2);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(device.settings.buzzer.from_hour, buff, 1, 2), 2, PCF8574_COLS-11);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(device.settings.buzzer.from_min, buff, 0, 2), 2, PCF8574_COLS-8);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(device.settings.buzzer.to_hour, buff, 1, 2), 2, PCF8574_COLS-5);
+					FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(device.settings.buzzer.to_min, buff, 0, 2), 2, PCF8574_COLS-2);
 
 					// Draw cursor position
 					switch(device.idx_curr) {
 
 						case 1: {
-							FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, 1, PCF8574_COLS-4);
+							FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_ANGLE_BRACKET_RIGHT, 1, PCF8574_COLS-4);
 							break;
 						}
 
@@ -509,17 +598,17 @@ void FSM_LCD_Process(void)
 
 						case 6: {
 							FSM_PCF8574_AddByteToQueue(PCF8574_CMD_DISPLAY_MODE | PCF8574_OPT_DISPLAY_ENABLE | PCF8574_OPT_CURSOR_INVISIBLE, PCF8574_COMMAND, PCF8574_BYTE_FULL, 0);
-							FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
+							FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-7);
 							break;
 						}
 
 						case 7: {
-							FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
+							FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_ANGLE_BRACKET_RIGHT, PCF8574_ROWS-1, PCF8574_COLS-3);
 							break;
 						}
 
 						default: {
-							FSM_PCF8574_AddStringFromFlash(LNG_SMB_ANGLE_BRACKET_RIGHT, 0, PCF8574_COLS-4);
+							FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_ANGLE_BRACKET_RIGHT, 0, PCF8574_COLS-4);
 							break;
 						}
 					}
@@ -649,6 +738,137 @@ uint8_t FSM_LCD_AddCustomCharStringToXYFromFlash(const char * str, uint8_t start
 	// Return last column position
 	return pos_col;
 }
-
-
 #endif
+
+
+/************************************************************************/
+/* Chart functions                                                      */
+/************************************************************************/
+void FSM_LCD_CreateChartsChar(void)
+{
+	FSM_PCF8574_CreateCharacterFromFlash(0, level0);
+	FSM_PCF8574_CreateCharacterFromFlash(1, level1);
+	FSM_PCF8574_CreateCharacterFromFlash(2, level2);
+	FSM_PCF8574_CreateCharacterFromFlash(3, level3);
+	FSM_PCF8574_CreateCharacterFromFlash(4, level4);
+	FSM_PCF8574_CreateCharacterFromFlash(5, level5);
+	FSM_PCF8574_CreateCharacterFromFlash(6, level6);
+	FSM_PCF8574_CreateCharacterFromFlash(7, level7);
+}
+
+void FSM_LCD_DrawChart(uint8_t *data, uint8_t length, uint8_t hysteresis, uint8_t absolute_max, uint8_t start_row, uint8_t start_col, uint8_t direction)
+{
+	uint8_t next_col;
+	uint8_t curr_value;
+	uint8_t *p_buff = data;
+	char buff[4];
+	uint8_t min = 0;
+	uint8_t max = 0;
+	
+	/* Scan buffer for min and max values */
+	for(uint8_t i=0; i<length; i++) {
+		// Setup min value
+		if(!min || min > *p_buff) { min = *p_buff; }
+		// Setup max value
+		if(max < *p_buff) { max = *p_buff; }
+		p_buff++;
+	}
+	/* Hysteresis */
+	if(min > hysteresis) { min -= hysteresis; } else { min = 0; }
+	max += hysteresis;
+	if(absolute_max < max) { max = absolute_max; }
+
+	// Scale calculating
+	uint8_t scale = ((max - min) / 24);
+	uint8_t scale_mantissa = (max-min) % 24;
+	if(scale) { // <- Scale more then 1
+		// Analog Round() function
+		if(scale_mantissa > 5) { scale++; }
+	} else { // <- Scale is zero
+		scale = 1;
+	}
+	// Draw min and max value
+	FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(max, buff, 1, 2), 1, PCF8574_COLS-2);
+	FSM_PCF8574_AddStringToXY(utoa_cycle_sub8(min, buff, 1, 2), 3, PCF8574_COLS-2);
+	// Main draw mechanism
+	for(uint8_t i=0; i<length; i++) {
+		if(direction) { // <- Direction from right to the left
+			next_col = start_col - i;
+		} else { // <- Direction from left to the right
+			next_col = start_col + i;
+		}
+		// Calculate scaled value
+		curr_value = (data[i] - min) / scale;
+		// Draw column
+		FSM_LCD_DrawChartVerticalLine(curr_value, 3, next_col);
+	}
+}
+
+void FSM_LCD_DrawChart16(uint16_t *data, uint8_t length, uint8_t hysteresis, uint16_t absolute_max, uint8_t start_row, uint8_t start_col, uint8_t direction)
+{
+	uint8_t next_col;
+	uint8_t curr_value;
+	uint16_t *p_buff = data;
+	char buff[6];
+	uint16_t min = 0;
+	uint16_t max = 0;
+	
+	/* Scan buffer for min and max values */
+	for(uint8_t i=0; i<length; i++) {
+		// Setup min value
+		if(!min || min > *p_buff) { min = *p_buff; }
+		// Setup max value
+		if(max < *p_buff) { max = *p_buff; }
+		p_buff++;
+	}
+
+	/* Hysteresis */
+	if(min > hysteresis) { min -= hysteresis; } else { min = 0; }
+	max += hysteresis;
+	if(absolute_max < max) { max = absolute_max; }
+
+	// Scale calculating
+	uint16_t scale = ((max - min) / 24);
+	uint16_t scale_mantissa = (max-min) % 24;
+	if(scale) { // <- Scale more then 1
+		// Analog Round() function
+		if(scale_mantissa > 5) { scale++; }
+	} else { // <- Scale is zero
+		scale = 1;
+	}
+	// Draw min and max value
+	FSM_PCF8574_AddStringToXY(utoa_cycle_sub16(max, buff, 1, 4), 1, PCF8574_COLS-4);
+	FSM_PCF8574_AddStringToXY(utoa_cycle_sub16(min, buff, 1, 4), 3, PCF8574_COLS-4);
+	// Main draw mechanism
+	for(uint8_t i=0; i<length; i++) {
+		if(direction) { // <- Direction from right to the left
+			next_col = start_col - i;
+		} else { // <- Direction from left to the right
+			next_col = start_col + i;
+		}
+		// Calculate scaled value
+		curr_value = (data[i] - min) / scale;
+		// Draw column
+		FSM_LCD_DrawChartVerticalLine(curr_value, 3, next_col);
+	}
+}
+
+void FSM_LCD_DrawChartVerticalLine(uint8_t value, uint8_t start_row, uint8_t col)
+{
+	uint8_t p_char;
+	uint8_t curr_row = start_row;
+	//uint8_t curr_value = value;
+
+	// Calculate scaled value for drawing
+	for(uint8_t i=0; i<3; i++) {
+		if(value >= 8) {
+			value -= 8;
+			p_char = pgm_read_byte(chart_table + 8);
+		} else {
+			p_char = pgm_read_byte(chart_table + value);
+			value = 0;
+		}
+		FSM_PCF8574_AddRAWCharToXY(p_char, curr_row, col);
+		curr_row--;
+	}
+}
