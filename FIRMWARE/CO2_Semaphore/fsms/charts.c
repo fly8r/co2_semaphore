@@ -58,10 +58,24 @@ void FSM_CHARTS_Process(void)
 					device.charts.h.by_hour[i+1] = device.charts.h.by_hour[i];
 					device.charts.t.by_hour[i+1] = device.charts.t.by_hour[i];
 				}
-				// Store values to buffer
-				device.charts.co2.by_hour[0] = mhz19b.value;
-				device.charts.h.by_hour[0] = dht.humidity.value;
-				device.charts.t.by_hour[0] = dht.temperature.value;
+				// Calculate hourly average CO2
+				uint16_t t = 0;
+				for(uint8_t i=0; i<15; i++) {
+					t += device.charts.co2.by_minute[i];
+				}
+				device.charts.co2.by_hour[0] = t / 15;
+				// Calculate hourly average Humidity
+				t=0;
+				for(uint8_t i=0; i<15; i++) {
+					t += device.charts.h.by_minute[i];
+				}
+				device.charts.h.by_hour[0] = t / 15;
+				// Calculate hourly average Temperature
+				t=0;
+				for(uint8_t i=0; i<15; i++) {
+					t += device.charts.t.by_minute[i];
+				}
+				device.charts.t.by_hour[0] = t / 15;
 			}
 			// Goto default state
 			FSM_state = FSM_CHARTS_STATE_IDLE;
