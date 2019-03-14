@@ -26,7 +26,7 @@ enum FSM_CHARTS_STATES_ENUM
 /************************************************************************/
 /* MACROS                                                               */
 /************************************************************************/
-#define CHART_BY_MINUTE_STORE_PERIOD		1	// minute
+#define CHART_BY_MINUTE_STORE_PERIOD		4	// minute
 #define CHART_BY_HOUR_STORE_PERIOD			60	// minute
 
 /************************************************************************/

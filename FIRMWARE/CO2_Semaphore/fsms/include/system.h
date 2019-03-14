@@ -8,6 +8,7 @@
 #define FSM_SYSTEM_H_
 
 #include <avr/eeprom.h>
+#include <util/atomic.h>
 #include "../../global_vars.h"
 #include "../../config.h"
 #include "../../HAL.h"

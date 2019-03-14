@@ -255,7 +255,7 @@ void FSM_LCD_Process(void)
 						// Upload charts char into LCD
 						FSM_LCD_CreateChartsChar();
 						// Load first line of splash string to display
-						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_CHART_CO2_HOURLY, 0, 0);
+						FSM_PCF8574_AddStringFromFlashToXY(LNG_DM_CHART_CO2_DAILY, 0, 0);
 						// Drawing chart procedure
 						FSM_LCD_DrawChart16((void *)&device.charts.co2.by_hour, 15, 200, 5000, 3, 0, 0);
 					}

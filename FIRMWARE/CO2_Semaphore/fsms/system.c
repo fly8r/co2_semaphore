@@ -603,16 +603,20 @@ void FSM_SYSTEM_RestoreSettings(void)
 
 void FSM_SYSTEM_LoadSettingsFromEEPROM(void)
 {
-	// Waiting for EEPROM ready
-	while(!eeprom_is_ready());
-	// Read settings from EEPROM
-	eeprom_read_block((void *)&device.settings, (void *)&ee_settings, sizeof(ee_settings));
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		// Waiting for EEPROM ready
+		while(!eeprom_is_ready());
+		// Read settings from EEPROM
+		eeprom_read_block((void *)&device.settings, (void *)&ee_settings, sizeof(ee_settings));
+	}
 }
 
 void FSM_SYSTEM_SaveSettingsToEEPROM(void)
 {
-	// Waiting for EEPROM ready
-	while(!eeprom_is_ready());
-	// Store settings to EEPROM
-	eeprom_write_block((void *)&device.settings, (void *)&ee_settings, sizeof(device.settings));
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		// Waiting for EEPROM ready
+		while(!eeprom_is_ready());
+		// Store settings to EEPROM
+		eeprom_write_block((void *)&device.settings, (void *)&ee_settings, sizeof(device.settings));
+	}
 }
