@@ -129,7 +129,7 @@ const	char
 			LNG_SPLASH_LOGO_S4[]						PROGMEM = "SEMAPHORE";
 
 const	char
-			LNG_HW_VERSION[]							PROGMEM = "HW: 1.0",
+			LNG_HW_VERSION[]							PROGMEM = "HW: 1.1",
 			LNG_SW_VERSION[]							PROGMEM = "SW: 1.0";
 
 const	char
