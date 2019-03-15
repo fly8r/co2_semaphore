@@ -25,6 +25,8 @@ uint8_t FSM_LCD_DrawCustomChar(char chr, uint8_t start_row, uint8_t start_col);
 uint8_t FSM_LCD_AddCustomCharStringToXY(char * str, uint8_t start_row, uint8_t start_col);
 uint8_t FSM_LCD_AddCustomCharStringToXYFromFlash(const char * str, uint8_t start_row, uint8_t start_col);
 #endif
+void FSM_LCD_CreateMenuChar(void);
+void FSM_LCD_RedrawMenuItems(void);
 void FSM_LCD_CreateChartsChar(void);
 void FSM_LCD_DrawChart(uint8_t *data, uint8_t length, uint8_t hysteresis, uint8_t absolute_max, uint8_t start_row, uint8_t start_col, uint8_t direction);
 void FSM_LCD_DrawChart16(uint16_t *data, uint8_t length, uint8_t hysteresis, uint16_t absolute_max, uint8_t start_row, uint8_t start_col, uint8_t direction);
@@ -246,7 +248,7 @@ void FSM_LCD_Process(void)
 					}
 					break;
 				}
-				
+
 				case DEVICE_MODE_IDLE_CHART_CO2_DAILY: {
 					// If mode was changed - full refresh LCD screen
 					if(_full_refresh) {
@@ -300,7 +302,7 @@ void FSM_LCD_Process(void)
 					}
 					break;
 				}
-				
+
 				case DEVICE_MODE_IDLE_CHART_TEMPERATURE_DAILY: {
 					// If mode was changed - full refresh LCD screen
 					if(_full_refresh) {
@@ -315,11 +317,17 @@ void FSM_LCD_Process(void)
 				}
 
 				case DEVICE_MODE_SHOW_MENU: {
+					// If mode was changed - recreate menu chars icon
+					if(_full_refresh) {
+						// Upload menu custom chars
+						FSM_LCD_CreateMenuChar();
+						// Redrawing menu items
+						FSM_LCD_RedrawMenuItems();
+					}
 					if(device.flags._menu_changed) {
 						// Flush menu change flag
 						device.flags._menu_changed = 0;
-						// Clear display
-						FSM_PCF8574_Clear();
+
 						// Cursor movement procedure
 						if((menu_item_t *)pgm_read_word(&last_menu_item->Previous) == (void *)selected_menu_item) {
 							if(device.menu_cursor > 0) {
@@ -331,19 +339,27 @@ void FSM_LCD_Process(void)
 								device.menu_cursor++;
 							}
 						}
+						/* Redraw display if need */
+						if(
+							// Cursor in 0 row position and current menu item have previous menu item
+							(!device.menu_cursor && (void *)pgm_read_word(&selected_menu_item->Previous) != (void *)&NULL_ENTRY) ||
+							// Cursor in max row position and current menu item have next menu item
+							(device.menu_cursor == 4 && (void *)pgm_read_word(&selected_menu_item->Next) != (void *)&NULL_ENTRY) ||
+							// Detect that menu deep was changed
+							((void *)pgm_read_word(&last_menu_item->Child) != (void *)&NULL_ENTRY && (void *)pgm_read_word(&last_menu_item->Child) == (void *)selected_menu_item) ||
+							((void *)pgm_read_word(&last_menu_item->Parent) != (void *)&NULL_ENTRY && (void *)pgm_read_word(&last_menu_item->Parent) == (void *)selected_menu_item)
+						) {
+							// Do screen update
+							FSM_LCD_RedrawMenuItems();
+						}
 						// Draw menu on the LCD line by line
 						for(uint8_t i=0; i < PCF8574_ROWS; i++) {
 							// Draw cursor
 							if(device.menu_cursor == i) {
-								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_ANGLE_BRACKET_RIGHT, i, 0);
+								FSM_PCF8574_AddRAWCharFromFlashToXY(PSTR("\x1"), i, 0);
 							} else {
 								FSM_PCF8574_AddStringFromFlashToXY(LNG_SMB_SPACE, i, 0);
 							}
-							// Draw menu item title
-							uint8_t shift = i-device.menu_cursor;
-							FSM_PCF8574_AddStringFromFlashToXY(MENU_GetMenuTextByShift(shift), i, 1);
-							// Draw subcategory symbol
-							FSM_PCF8574_AddStringFromFlashToXY(MENU_GetChildMenuSymbolByShift(shift), i, PCF8574_COLS-2);
 						}
 						// Store last menu item pointer
 						last_menu_item = selected_menu_item;
@@ -740,6 +756,26 @@ uint8_t FSM_LCD_AddCustomCharStringToXYFromFlash(const char * str, uint8_t start
 }
 #endif
 
+void FSM_LCD_CreateMenuChar(void)
+{
+	FSM_PCF8574_CreateCharacterFromFlash(0, cc_icon_enter);
+	FSM_PCF8574_CreateCharacterFromFlash(1, cc_icon_solid_rarrow);
+	FSM_PCF8574_CreateCharacterFromFlash(2, cc_icon_top);
+}
+
+void FSM_LCD_RedrawMenuItems(void)
+{
+	// Clear display
+	FSM_PCF8574_Clear();
+	// Draw menu on the LCD line by line
+	for(uint8_t i=0; i < PCF8574_ROWS; i++) {
+		// Draw menu item title
+		uint8_t shift = i-device.menu_cursor;
+		FSM_PCF8574_AddStringFromFlashToXY(MENU_GetMenuTextByShift(shift), i, 1);
+		// Draw subcategory symbol
+		FSM_PCF8574_AddStringFromFlashToXY(MENU_GetChildMenuSymbolByShift(shift), i, PCF8574_COLS-1);
+	}
+}
 
 /************************************************************************/
 /* Chart functions                                                      */
@@ -764,7 +800,7 @@ void FSM_LCD_DrawChart(uint8_t *data, uint8_t length, uint8_t hysteresis, uint8_
 	char buff[4];
 	uint8_t min = 0;
 	uint8_t max = 0;
-	
+
 	/* Scan buffer for min and max values */
 	for(uint8_t i=0; i<length; i++) {
 		// Setup min value
@@ -812,7 +848,7 @@ void FSM_LCD_DrawChart16(uint16_t *data, uint8_t length, uint8_t hysteresis, uin
 	char buff[6];
 	uint16_t min = 0;
 	uint16_t max = 0;
-	
+
 	/* Scan buffer for min and max values */
 	for(uint8_t i=0; i<length; i++) {
 		// Setup min value

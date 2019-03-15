@@ -22,6 +22,11 @@ extern	const	char
 		level7[8];
 
 extern	const	char
+		cc_icon_enter[],
+		cc_icon_solid_rarrow[],
+		cc_icon_top[];
+
+extern	const	char
 		LNG_SPLASH_LOGO_S1[],
 		LNG_SPLASH_LOGO_S1_1[],
 		LNG_SPLASH_LOGO_S4[];

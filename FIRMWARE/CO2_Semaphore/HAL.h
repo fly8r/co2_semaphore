@@ -64,7 +64,7 @@
 //------------------------------ Display configuration
 #define PCF8574_ROWS					4
 #define PCF8574_COLS					20
-#define PCF8574_QUEUE_SIZE				(PCF8574_COLS * PCF8574_ROWS * 2 + 80)
+#define PCF8574_QUEUE_SIZE				(PCF8574_COLS * PCF8574_ROWS * 2 + 24)
 //> IC configuration
 #define PCF8574_ADDRESS                 0x40 //0b10000000       // 0x4E is default PCF8574 device address at I2C
 #define PCF8574_BL_CTRL					0						// Use for control back light

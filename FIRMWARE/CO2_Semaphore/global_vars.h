@@ -136,6 +136,7 @@ typedef struct PROGMEM {
 	void			*Previous;
 	void			*Parent;
 	void			*Child;
+	uint8_t			_icon_top, _icon_child;
 	uint8_t			Select;
 	const char		*Text;
 } menu_item_t;
@@ -149,12 +150,12 @@ extern	const	menu_item_t		Null_Menu;
 #define MENU_CHILD      ((menu_item_t *)pgm_read_word(&selected_menu_item->Child))
 #define MENU_SELECT		(pgm_read_byte(&selected_menu_item->Select))
 
-#define MAKE_MENU(Name, Next, Previous, Parent, Child, Select, Text) \
+#define MAKE_MENU(Name, Next, Previous, Parent, Child, Select, Text, _icon_top, _icon_child) \
 extern const menu_item_t Next;     \
 extern const menu_item_t Previous; \
 extern const menu_item_t Parent;   \
 extern const menu_item_t Child;  \
-const menu_item_t Name = {(void *)&Next, (void *)&Previous, (void *)&Parent, (void *)&Child, (uint8_t)Select, Text}
+const menu_item_t Name = {(void *)&Next, (void *)&Previous, (void *)&Parent, (void *)&Child, (uint8_t)_icon_top, (uint8_t)_icon_child, (uint8_t)Select, Text}
 
 /************************************************************************/
 /* mhz19b.h                                                             */

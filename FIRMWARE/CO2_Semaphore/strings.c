@@ -90,6 +90,39 @@ const	char	level7[8]			PROGMEM = {
 	0b00011111			//	*****
 };
 
+const	char	cc_icon_enter[8]	PROGMEM = {
+	0b00000000,			//
+	0b00010000,			//	*
+	0b00010000,			//	*
+	0b00010010,			//	*  *
+	0b00011111,			//	*****
+	0b00000010,			//	   *
+	0b00000000,			//
+	0b00000000			//
+};
+
+const	char	cc_icon_solid_rarrow[8]	PROGMEM = {
+	0b00000000,			//
+	0b00000100,			//	 *
+	0b00000110,			//	 **
+	0b00000111,			//	 ***
+	0b00000110,			//	 **
+	0b00000100,			//	 *
+	0b00000000,			//
+	0b00000000			//
+};
+
+const	char	cc_icon_top[8]		PROGMEM = {
+	0b00000000,			//
+	0b00000010,			//	   *
+	0b00000111,			//	  ***
+	0b00000010,			//	   *
+	0b00011110,			//	****
+	0b00000000,			//
+	0b00000000,			//
+	0b00000000			//
+};
+
 const	char
 			LNG_SPLASH_LOGO_S1[]						PROGMEM = "C0",
 			LNG_SPLASH_LOGO_S1_1[]						PROGMEM = "2",
@@ -137,14 +170,14 @@ const	char
 
 const	char
 			LNG_MENU_ITEM_SETTINGS[]					PROGMEM = "Settings",
-			LNG_MENU_ITEM_SETTINGS_CLOCK[]				PROGMEM = "Clock",
+			LNG_MENU_ITEM_SETTINGS_CLOCK[]				PROGMEM = "Clock setup",
 			LNG_MENU_ITEM_SETTINGS_CLOCK_TIME_SETUP[]	PROGMEM = "Time setup",
 			LNG_MENU_ITEM_SETTINGS_CLOCK_TIME_DATE[]	PROGMEM = "Date setup",
 			LNG_MENU_ITEM_SETTINGS_CLOCK_TIME_CAL[]		PROGMEM = "Calibration",
 			LNG_MENU_ITEM_SETTINGS_ALARM[]				PROGMEM = "Alarm",
 			LNG_MENU_ITEM_SETTINGS_ALARM_LEVELS[]		PROGMEM = "Levels setup",
 			LNG_MENU_ITEM_SETTINGS_ALARM_BUZZER[]		PROGMEM = "Buzzer setup",
-			LNG_MENU_ITEM_SETTINGS_LCD_BACKLIGHT[]		PROGMEM = "LCD Backlight",
+			LNG_MENU_ITEM_SETTINGS_LCD_BACKLIGHT[]		PROGMEM = "Backlight setup",
 			LNG_MENU_ITEM_MONITORING[]					PROGMEM = "Monitoring",
 			LNG_MENU_ITEM_MONITORING_CO2[]				PROGMEM = "CO2 Graph",
 			LNG_MENU_ITEM_MONITORING_T[]				PROGMEM = "Temperature Graph",

@@ -339,13 +339,13 @@ void FSM_PCF8574_AddRAWCharToXY(char chr, uint8_t row, uint8_t col)
 /* Add char from flash to LCD */
 void FSM_PCF8574_AddRAWCharFromFlash(const char *chr)
 {
-	char c = pgm_read_byte(*chr);
+	char c = pgm_read_byte(chr);
 	FSM_PCF8574_AddRAWChar(c);
 }
 
 void FSM_PCF8574_AddRAWCharFromFlashToXY(const char *chr, uint8_t row, uint8_t col)
 {
-	char c = pgm_read_byte(*chr);
+	char c = pgm_read_byte(chr);
 	FSM_PCF8574_GoToXY(row, col);
 	FSM_PCF8574_AddRAWChar(c);
 }
